@@ -16,6 +16,11 @@
 
 ## 1. Introdução e Conceitos Fundamentais
 
+O pacote Apache Commons Collections contém tipos que estendem e aumentam o Java Collections Framework.
+
+**Apache Commons Collections**
+https://mvnrepository.com/artifact/org.apache.commons/commons-collections4
+
 ### O que é Apache Commons Collections 4?
 
 Imagine que o Java Collections Framework (JCF) é como uma caixa de ferramentas básica para um carpinteiro. O Apache Commons Collections 4 é como ter uma oficina completa com ferramentas especializadas.
