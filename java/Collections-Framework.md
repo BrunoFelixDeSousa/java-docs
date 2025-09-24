@@ -13,7 +13,12 @@
 10. [Java Generics](#10-java-generics)
 11. [Streams e Collections](#11-streams-e-collections)
 12. [Benchmarks de Performance](#12-benchmarks-de-performance)
-13. [Mini-projeto: Sistema de Biblioteca](#13-mini-projeto-sistema-de-biblioteca)
+13. [Collections Concorrentes (Thread-Safe)](#13-collections-concorrentes-thread-safe)
+14. [Collections Imutáveis e Factory Methods](#14-collections-imutáveis-e-factory-methods)
+15. [Padrões de Design com Collections](#15-padrões-de-design-com-collections)
+16. [Troubleshooting e Debugging](#16-troubleshooting-e-debugging)
+17. [Mini-projeto: Sistema de Biblioteca Avançado](#17-mini-projeto-sistema-de-biblioteca-avançado)
+18. [Referência Rápida e Cheat Sheet](#18-referência-rápida-e-cheat-sheet)
 
 ---
 
@@ -120,16 +125,152 @@ public class CollectionBasics {
         frutas.add("Laranja");
         
         // Verificar conteúdo
-        System.out.println("Agrupadas por tamanho: " + porTamanho);
+        System.out.println("Tamanho: " + frutas.size()); // 3
+        System.out.println("Contém Banana? " + frutas.contains("Banana")); // true
+        System.out.println("Está vazia? " + frutas.isEmpty()); // false
         
-        // min() e max()
-        Optional<Integer> minimo = numeros.stream().min(Integer::compareTo);
-        Optional<Integer> maximo = numeros.stream().max(Integer::compareTo);
-        System.out.println("Mínimo: " + minimo.orElse(0));
-        System.out.println("Máximo: " + maximo.orElse(0));
+        // Iterar (3 formas diferentes)
+        
+        // Forma 1: Enhanced for loop (mais comum)
+        System.out.println("\n=== FORMA 1: Enhanced For ===");
+        for (String fruta : frutas) {
+            System.out.println("Fruta: " + fruta);
+        }
+        
+        // Forma 2: Iterator tradicional
+        System.out.println("\n=== FORMA 2: Iterator ===");
+        Iterator<String> it = frutas.iterator();
+        while (it.hasNext()) {
+            String fruta = it.next();
+            System.out.println("Fruta: " + fruta);
+            // Pode usar it.remove() se necessário
+        }
+        
+        // Forma 3: Streams (Java 8+)
+        System.out.println("\n=== FORMA 3: Streams ===");
+        frutas.stream()
+              .forEach(fruta -> System.out.println("Fruta: " + fruta));
+        
+        // Operações bulk (em lote)
+        Collection<String> maisFrutas = Arrays.asList("Pêra", "Uva", "Manga");
+        frutas.addAll(maisFrutas); // Adicionar outra coleção
+        System.out.println("\nApós addAll: " + frutas);
+        
+        Collection<String> frutasComA = Arrays.asList("Maçã", "Abacaxi");
+        boolean contemTodas = frutas.containsAll(frutasComA);
+        System.out.println("Contém todas com A? " + contemTodas);
+        
+        // Remoção
+        frutas.remove("Banana");
+        System.out.println("Após remover Banana: " + frutas);
+        
+        // Remover múltiplos elementos
+        frutas.removeAll(Arrays.asList("Pêra", "Uva"));
+        System.out.println("Após removeAll: " + frutas);
+        
+        // Manter apenas elementos específicos
+        frutas.retainAll(Arrays.asList("Maçã", "Laranja", "Manga"));
+        System.out.println("Após retainAll: " + frutas);
+        
+        // Conversão para Array
+        String[] arrayFrutas = frutas.toArray(new String[0]);
+        System.out.println("Como array: " + Arrays.toString(arrayFrutas));
+        
+        // Limpar tudo
+        frutas.clear();
+        System.out.println("Após clear - vazia? " + frutas.isEmpty()); // true
     }
 }
 ```
+
+### 3.1 Operações Avançadas com Collection
+
+```java
+import java.util.*;
+import java.util.function.Predicate;
+
+public class CollectionAvancado {
+    public static void main(String[] args) {
+        List<Integer> numeros = Arrays.asList(1, 2, 3, 4, 5, 6, 7, 8, 9, 10);
+        
+        // Usar predicados para operações condicionais (Java 8+)
+        System.out.println("=== OPERAÇÕES COM PREDICADOS ===");
+        
+        // Remover elementos que atendem condição
+        List<Integer> lista = new ArrayList<>(numeros);
+        lista.removeIf(n -> n % 2 == 0); // Remove números pares
+        System.out.println("Sem pares: " + lista);
+        
+        // Predicados personalizados
+        Predicate<Integer> ehMaiorQue5 = n -> n > 5;
+        Predicate<Integer> ehPar = n -> n % 2 == 0;
+        Predicate<Integer> ehParEMaiorQue5 = ehPar.and(ehMaiorQue5);
+        
+        lista = new ArrayList<>(numeros);
+        lista.removeIf(ehParEMaiorQue5);
+        System.out.println("Sem pares > 5: " + lista);
+        
+        // Operações com múltiplas collections
+        System.out.println("\n=== OPERAÇÕES ENTRE COLLECTIONS ===");
+        
+        Set<String> conjunto1 = new HashSet<>(Arrays.asList("A", "B", "C", "D"));
+        Set<String> conjunto2 = new HashSet<>(Arrays.asList("C", "D", "E", "F"));
+        
+        // União
+        Set<String> uniao = new HashSet<>(conjunto1);
+        uniao.addAll(conjunto2);
+        System.out.println("União: " + uniao); // [A, B, C, D, E, F]
+        
+        // Interseção
+        Set<String> intersecao = new HashSet<>(conjunto1);
+        intersecao.retainAll(conjunto2);
+        System.out.println("Interseção: " + intersecao); // [C, D]
+        
+        // Diferença
+        Set<String> diferenca = new HashSet<>(conjunto1);
+        diferenca.removeAll(conjunto2);
+        System.out.println("Diferença: " + diferenca); // [A, B]
+        
+        // Diferença simétrica (elementos em A ou B, mas não em ambos)
+        Set<String> difSimetrica = new HashSet<>(conjunto1);
+        difSimetrica.addAll(conjunto2);
+        Set<String> intersecaoTemp = new HashSet<>(conjunto1);
+        intersecaoTemp.retainAll(conjunto2);
+        difSimetrica.removeAll(intersecaoTemp);
+        System.out.println("Diferença simétrica: " + difSimetrica); // [A, B, E, F]
+        
+        demonstrarEquals();
+    }
+    
+    private static void demonstrarEquals() {
+        System.out.println("\n=== IGUALDADE ENTRE COLLECTIONS ===");
+        
+        // Lists são iguais se têm mesmos elementos na mesma ordem
+        List<String> lista1 = Arrays.asList("A", "B", "C");
+        List<String> lista2 = Arrays.asList("A", "B", "C");
+        List<String> lista3 = Arrays.asList("C", "B", "A");
+        
+        System.out.println("lista1.equals(lista2): " + lista1.equals(lista2)); // true
+        System.out.println("lista1.equals(lista3): " + lista1.equals(lista3)); // false (ordem diferente)
+        
+        // Sets são iguais se têm mesmos elementos (ordem não importa)
+        Set<String> set1 = new HashSet<>(Arrays.asList("A", "B", "C"));
+        Set<String> set2 = new HashSet<>(Arrays.asList("C", "B", "A"));
+        
+        System.out.println("set1.equals(set2): " + set1.equals(set2)); // true (ordem não importa)
+        
+        // Maps são iguais se têm mesmos pares chave-valor
+        Map<String, Integer> map1 = new HashMap<>();
+        map1.put("A", 1);
+        map1.put("B", 2);
+        
+        Map<String, Integer> map2 = new HashMap<>();
+        map2.put("B", 2);
+        map2.put("A", 1);
+        
+        System.out.println("map1.equals(map2): " + map1.equals(map2)); // true
+    }
+}
 
 ### 11.3 Trabalhando com Objetos Complexos
 
@@ -333,7 +474,492 @@ public class ParallelStreamsExemplo {
 
 ---
 
-## 12. Benchmarks de Performance
+## 12. Collections Concorrentes (Thread-Safe)
+
+### Introdução à Concorrência com Collections
+
+Em aplicações multi-thread, as collections padrão do Java **NÃO são thread-safe**. Tentar usar ArrayList, HashMap, etc., em múltiplas threads simultaneamente pode causar:
+- **Corrupção de dados**
+- **Loops infinitos**
+- **ConcurrentModificationException**
+- **Perda de dados**
+
+### 12.1 ConcurrentHashMap - HashMap Thread-Safe
+
+```java
+import java.util.concurrent.*;
+import java.util.*;
+
+public class ConcurrentHashMapExemplo {
+    public static void main(String[] args) throws InterruptedException {
+        demonstrarProblema();
+        demonstrarSolucao();
+        demonstrarOperacoesAtomicas();
+    }
+    
+    private static void demonstrarProblema() throws InterruptedException {
+        System.out.println("=== PROBLEMA COM HASHMAP NORMAL ===");
+        
+        Map<String, Integer> mapaUnsafe = new HashMap<>();
+        int numThreads = 5;
+        int operacoesPorThread = 1000;
+        
+        Thread[] threads = new Thread[numThreads];
+        
+        for (int i = 0; i < numThreads; i++) {
+            int threadId = i;
+            threads[i] = new Thread(() -> {
+                for (int j = 0; j < operacoesPorThread; j++) {
+                    String key = "key" + (threadId * operacoesPorThread + j);
+                    mapaUnsafe.put(key, threadId);
+                    // Pode causar problemas de concorrência!
+                }
+            });
+        }
+        
+        for (Thread thread : threads) thread.start();
+        for (Thread thread : threads) thread.join();
+        
+        System.out.println("Esperado: " + (numThreads * operacoesPorThread));
+        System.out.println("Atual: " + mapaUnsafe.size());
+        System.out.println("⚠️ Possível perda de dados devido à concorrência!\n");
+    }
+    
+    private static void demonstrarSolucao() throws InterruptedException {
+        System.out.println("=== SOLUÇÃO COM CONCURRENTHASHMAP ===");
+        
+        Map<String, Integer> mapaSafe = new ConcurrentHashMap<>();
+        int numThreads = 5;
+        int operacoesPorThread = 1000;
+        
+        Thread[] threads = new Thread[numThreads];
+        
+        for (int i = 0; i < numThreads; i++) {
+            int threadId = i;
+            threads[i] = new Thread(() -> {
+                for (int j = 0; j < operacoesPorThread; j++) {
+                    String key = "key" + (threadId * operacoesPorThread + j);
+                    mapaSafe.put(key, threadId);
+                    // Thread-safe!
+                }
+            });
+        }
+        
+        for (Thread thread : threads) thread.start();
+        for (Thread thread : threads) thread.join();
+        
+        System.out.println("Esperado: " + (numThreads * operacoesPorThread));
+        System.out.println("Atual: " + mapaSafe.size());
+        System.out.println("✅ Dados íntegros com ConcurrentHashMap!\n");
+    }
+    
+    private static void demonstrarOperacoesAtomicas() {
+        System.out.println("=== OPERAÇÕES ATÔMICAS ===");
+        
+        ConcurrentHashMap<String, Integer> contador = new ConcurrentHashMap<>();
+        
+        // putIfAbsent - adiciona apenas se não existir
+        contador.putIfAbsent("visits", 0);
+        contador.putIfAbsent("visits", 10); // Não sobrescreve
+        System.out.println("Visits: " + contador.get("visits")); // 0
+        
+        // compute - atualiza valor com função
+        contador.compute("visits", (key, val) -> val == null ? 1 : val + 1);
+        System.out.println("Visits após compute: " + contador.get("visits")); // 1
+        
+        // computeIfAbsent - computa apenas se ausente
+        contador.computeIfAbsent("newCounter", k -> 100);
+        System.out.println("New counter: " + contador.get("newCounter")); // 100
+        
+        // computeIfPresent - computa apenas se presente
+        contador.computeIfPresent("visits", (k, v) -> v * 2);
+        System.out.println("Visits dobrado: " + contador.get("visits")); // 2
+        
+        // merge - combina valores
+        contador.merge("visits", 5, Integer::sum);
+        System.out.println("Visits após merge: " + contador.get("visits")); // 7
+        
+        // replace com condição
+        boolean replaced = contador.replace("visits", 7, 10);
+        System.out.println("Replaced: " + replaced + ", novo valor: " + contador.get("visits"));
+    }
+}
+```
+
+### 12.2 CopyOnWriteArrayList - Lista Thread-Safe para Muitas Leituras
+
+```java
+import java.util.concurrent.*;
+import java.util.*;
+
+public class CopyOnWriteExemplo {
+    public static void main(String[] args) throws InterruptedException {
+        demonstrarCopyOnWrite();
+        demonstrarCasoDeUso();
+    }
+    
+    private static void demonstrarCopyOnWrite() throws InterruptedException {
+        System.out.println("=== COPYONWRITEARRAYLIST ===");
+        
+        // Ideal para cenários com muitas leituras e poucas escritas
+        List<String> lista = new CopyOnWriteArrayList<>();
+        lista.add("Item 1");
+        lista.add("Item 2");
+        lista.add("Item 3");
+        
+        // Thread que lê constantemente
+        Thread leitor = new Thread(() -> {
+            for (int i = 0; i < 1000; i++) {
+                // Iterator nunca lança ConcurrentModificationException
+                for (String item : lista) {
+                    // Leitura segura mesmo durante modificações
+                }
+                try { Thread.sleep(1); } catch (InterruptedException e) { break; }
+            }
+        });
+        
+        // Thread que modifica ocasionalmente
+        Thread escritor = new Thread(() -> {
+            for (int i = 0; i < 10; i++) {
+                lista.add("Item " + (4 + i));
+                try { Thread.sleep(50); } catch (InterruptedException e) { break; }
+            }
+        });
+        
+        leitor.start();
+        escritor.start();
+        
+        leitor.join();
+        escritor.join();
+        
+        System.out.println("Tamanho final da lista: " + lista.size());
+        System.out.println("✅ Sem ConcurrentModificationException!");
+    }
+    
+    private static void demonstrarCasoDeUso() {
+        System.out.println("\n=== CASO DE USO: CACHE DE CONFIGURAÇÃO ===");
+        
+        // Cache de configurações que raramente muda
+        ConfigurationCache cache = new ConfigurationCache();
+        
+        // Simular múltiplas threads lendo configurações
+        for (int i = 0; i < 5; i++) {
+            new Thread(() -> {
+                for (int j = 0; j < 100; j++) {
+                    String config = cache.getConfig("timeout");
+                    // Leitura muito frequente
+                }
+                System.out.println("Thread " + Thread.currentThread().getId() + " terminou leituras");
+            }).start();
+        }
+        
+        // Thread que atualiza configuração ocasionalmente
+        new Thread(() -> {
+            try {
+                Thread.sleep(100);
+                cache.updateConfig("timeout", "30s");
+                Thread.sleep(200);
+                cache.updateConfig("maxConnections", "100");
+            } catch (InterruptedException e) { }
+            System.out.println("Configurações atualizadas");
+        }).start();
+    }
+}
+
+class ConfigurationCache {
+    // CopyOnWriteArrayList para pares chave-valor
+    private final List<ConfigEntry> configs = new CopyOnWriteArrayList<>();
+    
+    public ConfigurationCache() {
+        configs.add(new ConfigEntry("timeout", "10s"));
+        configs.add(new ConfigEntry("maxConnections", "50"));
+    }
+    
+    public String getConfig(String key) {
+        // Leitura muito rápida - não bloqueia
+        return configs.stream()
+                     .filter(entry -> entry.key.equals(key))
+                     .map(entry -> entry.value)
+                     .findFirst()
+                     .orElse(null);
+    }
+    
+    public void updateConfig(String key, String value) {
+        // Escrita mais lenta - copia array inteiro
+        configs.removeIf(entry -> entry.key.equals(key));
+        configs.add(new ConfigEntry(key, value));
+    }
+    
+    private static class ConfigEntry {
+        final String key;
+        final String value;
+        
+        ConfigEntry(String key, String value) {
+            this.key = key;
+            this.value = value;
+        }
+    }
+}
+```
+
+### 12.3 BlockingQueue - Filas para Comunicação entre Threads
+
+```java
+import java.util.concurrent.*;
+import java.util.*;
+
+public class BlockingQueueExemplo {
+    public static void main(String[] args) throws InterruptedException {
+        demonstrarArrayBlockingQueue();
+        demonstrarLinkedBlockingQueue();
+        demonstrarPriorityBlockingQueue();
+        demonstrarProducerConsumer();
+    }
+    
+    private static void demonstrarArrayBlockingQueue() throws InterruptedException {
+        System.out.println("=== ARRAYBLOCKINGQUEUE ===");
+        
+        // Fila com capacidade limitada
+        BlockingQueue<String> fila = new ArrayBlockingQueue<>(3);
+        
+        // Adicionar elementos
+        fila.put("Item 1");
+        fila.put("Item 2");
+        fila.put("Item 3");
+        
+        System.out.println("Fila cheia: " + fila.size() + "/3");
+        
+        // Tentar adicionar mais (vai bloquear!)
+        Thread produtor = new Thread(() -> {
+            try {
+                System.out.println("Tentando adicionar Item 4 (vai bloquear)...");
+                fila.put("Item 4"); // Bloqueia até ter espaço
+                System.out.println("Item 4 adicionado!");
+            } catch (InterruptedException e) { }
+        });
+        
+        produtor.start();
+        Thread.sleep(2000); // Esperar um pouco
+        
+        // Consumir um item para liberar espaço
+        String item = fila.take();
+        System.out.println("Consumido: " + item);
+        
+        produtor.join();
+    }
+    
+    private static void demonstrarLinkedBlockingQueue() {
+        System.out.println("\n=== LINKEDBLOCKINGQUEUE ===");
+        
+        // Fila sem limite (ou com limite muito alto)
+        BlockingQueue<Integer> fila = new LinkedBlockingQueue<>();
+        
+        // Adicionar muitos elementos rapidamente
+        for (int i = 1; i <= 10000; i++) {
+            fila.offer(i); // Não bloqueia
+        }
+        
+        System.out.println("Elementos na fila: " + fila.size());
+    }
+    
+    private static void demonstrarPriorityBlockingQueue() throws InterruptedException {
+        System.out.println("\n=== PRIORITYBLOCKINGQUEUE ===");
+        
+        // Fila com prioridade thread-safe
+        BlockingQueue<Task> filaTarefas = new PriorityBlockingQueue<>();
+        
+        // Adicionar tarefas com diferentes prioridades
+        filaTarefas.put(new Task("Tarefa Normal", 5));
+        filaTarefas.put(new Task("Tarefa Urgente", 1));
+        filaTarefas.put(new Task("Tarefa Baixa", 10));
+        filaTarefas.put(new Task("Tarefa Crítica", 0));
+        
+        // Consumir em ordem de prioridade
+        System.out.println("Processando tarefas por prioridade:");
+        while (!filaTarefas.isEmpty()) {
+            Task tarefa = filaTarefas.take();
+            System.out.println("Processando: " + tarefa);
+        }
+    }
+    
+    private static void demonstrarProducerConsumer() throws InterruptedException {
+        System.out.println("\n=== PADRÃO PRODUCER-CONSUMER ===");
+        
+        BlockingQueue<String> buffer = new ArrayBlockingQueue<>(5);
+        
+        // Producer
+        Thread produtor = new Thread(() -> {
+            try {
+                for (int i = 1; i <= 10; i++) {
+                    String produto = "Produto " + i;
+                    buffer.put(produto);
+                    System.out.println("Produzido: " + produto);
+                    Thread.sleep(100); // Simular tempo de produção
+                }
+            } catch (InterruptedException e) { }
+        });
+        
+        // Consumer
+        Thread consumidor = new Thread(() -> {
+            try {
+                for (int i = 1; i <= 10; i++) {
+                    String produto = buffer.take();
+                    System.out.println("  Consumido: " + produto);
+                    Thread.sleep(200); // Simular tempo de processamento
+                }
+            } catch (InterruptedException e) { }
+        });
+        
+        produtor.start();
+        consumidor.start();
+        
+        produtor.join();
+        consumidor.join();
+        
+        System.out.println("Padrão Producer-Consumer concluído!");
+    }
+}
+
+class Task implements Comparable<Task> {
+    private final String nome;
+    private final int prioridade;
+    
+    public Task(String nome, int prioridade) {
+        this.nome = nome;
+        this.prioridade = prioridade;
+    }
+    
+    @Override
+    public int compareTo(Task other) {
+        return Integer.compare(this.prioridade, other.prioridade);
+    }
+    
+    @Override
+    public String toString() {
+        return nome + " (prioridade: " + prioridade + ")";
+    }
+}
+```
+
+### 12.4 Collections Sincronizadas vs. Concurrent Collections
+
+```java
+import java.util.*;
+import java.util.concurrent.*;
+
+public class SyncVsConcurrent {
+    public static void main(String[] args) {
+        compararPerformance();
+        compararSeguranca();
+    }
+    
+    private static void compararPerformance() {
+        System.out.println("=== COMPARAÇÃO DE PERFORMANCE ===");
+        
+        // Collections sincronizadas (Java 1.2+)
+        List<String> listaSincronizada = Collections.synchronizedList(new ArrayList<>());
+        
+        // Collections concorrentes (Java 1.5+)
+        List<String> listaConcorrente = new CopyOnWriteArrayList<>();
+        
+        Map<String, String> mapaSincronizado = Collections.synchronizedMap(new HashMap<>());
+        Map<String, String> mapaConcorrente = new ConcurrentHashMap<>();
+        
+        System.out.println("✅ Collections sincronizadas:");
+        System.out.println("  - Bloqueio completo da coleção");
+        System.out.println("  - Uma thread por vez");
+        System.out.println("  - Compatibilidade com Java antigo");
+        
+        System.out.println("\n✅ Collections concorrentes:");
+        System.out.println("  - Bloqueio granular (por segmento)");
+        System.out.println("  - Múltiplas threads simultâneas");
+        System.out.println("  - Melhor performance em alta concorrência");
+    }
+    
+    private static void compararSeguranca() {
+        System.out.println("\n=== COMPARAÇÃO DE SEGURANÇA ===");
+        
+        List<String> listaSyncronizada = Collections.synchronizedList(new ArrayList<>());
+        listaSyncronizada.add("Item 1");
+        listaSyncronizada.add("Item 2");
+        
+        // ⚠️ PERIGO: Iterator não é thread-safe mesmo com synchronizedList!
+        System.out.println("⚠️ Synchronized collections e iterators:");
+        synchronized (listaSyncronizada) {
+            // DEVE sincronizar manualmente ao iterar!
+            for (String item : listaSyncronizada) {
+                System.out.println(item);
+            }
+        }
+        
+        // ✅ SEGURO: CopyOnWriteArrayList tem iterator thread-safe
+        List<String> listaConcorrente = new CopyOnWriteArrayList<>();
+        listaConcorrente.add("Item A");
+        listaConcorrente.add("Item B");
+        
+        System.out.println("\n✅ Concurrent collections:");
+        for (String item : listaConcorrente) {
+            // Iterator automáticamente thread-safe!
+            System.out.println(item);
+        }
+    }
+}
+```
+
+### 12.5 Guia de Escolha para Collections Thread-Safe
+
+| Cenário | Collection Recomendada | Motivo |
+|---------|------------------------|--------|
+| **Map com alta concorrência** | `ConcurrentHashMap` | Bloqueio granular, alta performance |
+| **Lista com muitas leituras** | `CopyOnWriteArrayList` | Iterator thread-safe, leitura rápida |
+| **Set com muitas leituras** | `CopyOnWriteArraySet` | Baseado em CopyOnWriteArrayList |
+| **Fila Producer-Consumer** | `ArrayBlockingQueue` | Capacidade limitada, bloqueia quando necessário |
+| **Fila sem limite** | `LinkedBlockingQueue` | Capacidade ilimitada (ou muito alta) |
+| **Fila com prioridade** | `PriorityBlockingQueue` | Elementos processados por prioridade |
+| **Compatibilidade legado** | `Collections.synchronizedXxx()` | Para código antigo que não pode mudar |
+
+### 12.6 Melhores Práticas
+
+```java
+public class MelhoresPraticasConcorrencia {
+    
+    // ✅ BOM: Use collections concorrentes apropriadas
+    private final Map<String, User> users = new ConcurrentHashMap<>();
+    
+    // ❌ MAU: Não use collections normais em ambiente multi-thread
+    // private final Map<String, User> users = new HashMap<>(); // PERIGO!
+    
+    // ✅ BOM: Para listas com muitas leituras
+    private final List<String> configs = new CopyOnWriteArrayList<>();
+    
+    // ✅ BOM: Para comunicação entre threads
+    private final BlockingQueue<Task> taskQueue = new ArrayBlockingQueue<>(100);
+    
+    public void exemplosBomUso() {
+        // Operações atômicas são preferíveis
+        users.computeIfAbsent("john", k -> new User(k));
+        
+        // Para múltiplas operações, considere sincronização externa
+        synchronized (this) {
+            if (!users.containsKey("jane")) {
+                users.put("jane", new User("jane"));
+            }
+        }
+    }
+    
+    private static class User {
+        private final String name;
+        
+        User(String name) { this.name = name; }
+        
+        public String getName() { return name; }
+    }
+}
+```
+
+---
+
+## 13. Benchmarks de Performance
 
 ### 12.1 Medindo Performance com JMH (Conceitual)
 
@@ -633,46 +1259,845 @@ public class GuiaEscolhaCollection {
 
 ---
 
-## 13. Mini-projeto: Sistema de Biblioteca
+## 14. Collections Imutáveis e Factory Methods
 
-Vamos criar um sistema completo que demonstra o uso prático de diferentes Collections:
+### Introdução às Collections Imutáveis
+
+Collections imutáveis são estruturas de dados que **não podem ser modificadas** após criação. Elas oferecem:
+- **Thread-safety automática**
+- **Prevenção de bugs** causados por modificações acidentais
+- **Melhor performance** em cenários específicos
+- **Código mais previsível**
+
+### 14.1 Factory Methods do Java 9+
+
+```java
+import java.util.*;
+
+public class FactoryMethodsExemplo {
+    public static void main(String[] args) {
+        demonstrarListOf();
+        demonstrarSetOf();
+        demonstrarMapOf();
+        compararComMetodosAntigos();
+    }
+    
+    private static void demonstrarListOf() {
+        System.out.println("=== LIST.OF() ===");
+        
+        // Java 9+ - Forma moderna
+        List<String> linguagens = List.of("Java", "Python", "JavaScript", "Go");
+        
+        System.out.println("Linguagens: " + linguagens);
+        System.out.println("Tamanho: " + linguagens.size());
+        
+        // Tentativa de modificação resulta em exceção
+        try {
+            linguagens.add("Rust"); // UnsupportedOperationException
+        } catch (UnsupportedOperationException e) {
+            System.out.println("⚠️ Lista é imutável: " + e.getMessage());
+        }
+        
+        // Operações de leitura funcionam normalmente
+        System.out.println("Contém Java: " + linguagens.contains("Java"));
+        System.out.println("Índice do Python: " + linguagens.indexOf("Python"));
+        
+        // List.of() não permite nulls
+        try {
+            List<String> comNull = List.of("A", null, "C"); // NullPointerException
+        } catch (NullPointerException e) {
+            System.out.println("⚠️ List.of() não permite nulls");
+        }
+    }
+    
+    private static void demonstrarSetOf() {
+        System.out.println("\n=== SET.OF() ===");
+        
+        // Set imutável
+        Set<Integer> numeros = Set.of(1, 2, 3, 4, 5);
+        System.out.println("Números: " + numeros);
+        
+        // Não permite duplicatas (exceção em tempo de criação)
+        try {
+            Set<String> comDuplicata = Set.of("A", "B", "A"); // IllegalArgumentException
+        } catch (IllegalArgumentException e) {
+            System.out.println("⚠️ Set.of() não permite duplicatas na criação");
+        }
+        
+        // Operações de conjunto ainda funcionam
+        Set<Integer> outros = Set.of(4, 5, 6, 7);
+        
+        // Para interseção, precisa criar um novo set mutável
+        Set<Integer> intersecao = new HashSet<>(numeros);
+        intersecao.retainAll(outros);
+        System.out.println("Interseção: " + intersecao);
+    }
+    
+    private static void demonstrarMapOf() {
+        System.out.println("\n=== MAP.OF() ===");
+        
+        // Map pequeno
+        Map<String, Integer> idades = Map.of(
+            "Ana", 25,
+            "Bruno", 30,
+            "Carlos", 35
+        );
+        
+        System.out.println("Idades: " + idades);
+        
+        // Para maps maiores, use Map.ofEntries()
+        Map<String, String> configuracoes = Map.ofEntries(
+            Map.entry("timeout", "30s"),
+            Map.entry("maxConnections", "100"),
+            Map.entry("retryAttempts", "3"),
+            Map.entry("enableSSL", "true"),
+            Map.entry("logLevel", "INFO")
+        );
+        
+        System.out.println("Configurações: " + configuracoes);
+        
+        // Tentativa de modificação
+        try {
+            idades.put("Diana", 28); // UnsupportedOperationException
+        } catch (UnsupportedOperationException e) {
+            System.out.println("⚠️ Map é imutável");
+        }
+    }
+    
+    private static void compararComMetodosAntigos() {
+        System.out.println("\n=== COMPARAÇÃO COM MÉTODOS ANTIGOS ===");
+        
+        // Método antigo (verboso e mutável por padrão)
+        List<String> antigoMutavel = new ArrayList<>();
+        antigoMutavel.add("Item 1");
+        antigoMutavel.add("Item 2");
+        List<String> antigoImutavel = Collections.unmodifiableList(antigoMutavel);
+        
+        System.out.println("Método antigo: " + antigoImutavel);
+        
+        // Método moderno (conciso e imutável por padrão)
+        List<String> moderno = List.of("Item 1", "Item 2");
+        System.out.println("Método moderno: " + moderno);
+        
+        // ⚠️ Problema com método antigo: lista original ainda é mutável!
+        antigoMutavel.add("Item 3"); // Afeta a lista "imutável"!
+        System.out.println("Lista 'imutável' após modificar original: " + antigoImutavel);
+        
+        System.out.println("✅ List.of() é verdadeiramente imutável");
+    }
+}
+```
+
+### 14.2 Trabalhando com Collections Imutáveis
 
 ```java
 import java.util.*;
 import java.util.stream.Collectors;
 
+public class TrabalhandoComImutaveis {
+    public static void main(String[] args) {
+        demonstrarTransformacoes();
+        demonstrarCombinacoes();
+        demonstrarPadroesBuilder();
+    }
+    
+    private static void demonstrarTransformacoes() {
+        System.out.println("=== TRANSFORMAÇÕES ===");
+        
+        List<Integer> numeros = List.of(1, 2, 3, 4, 5);
+        
+        // Transformar em nova lista imutável
+        List<Integer> dobrados = numeros.stream()
+            .map(n -> n * 2)
+            .collect(Collectors.toUnmodifiableList()); // Java 10+
+        
+        System.out.println("Original: " + numeros);
+        System.out.println("Dobrados: " + dobrados);
+        
+        // Filtrar e coletar
+        List<Integer> pares = numeros.stream()
+            .filter(n -> n % 2 == 0)
+            .collect(Collectors.toUnmodifiableList());
+        
+        System.out.println("Apenas pares: " + pares);
+        
+        // Transformar em Set imutável
+        Set<String> strings = numeros.stream()
+            .map(Object::toString)
+            .collect(Collectors.toUnmodifiableSet());
+        
+        System.out.println("Como strings: " + strings);
+    }
+    
+    private static void demonstrarCombinacoes() {
+        System.out.println("\n=== COMBINAÇÕES ===");
+        
+        List<String> lista1 = List.of("A", "B", "C");
+        List<String> lista2 = List.of("D", "E", "F");
+        
+        // Combinar listas imutáveis
+        List<String> combinada = Stream.concat(lista1.stream(), lista2.stream())
+            .collect(Collectors.toUnmodifiableList());
+        
+        System.out.println("Lista combinada: " + combinada);
+        
+        // Adicionar elemento a lista imutável (criando nova)
+        List<String> comNovoItem = Stream.concat(
+            lista1.stream(),
+            Stream.of("Novo Item")
+        ).collect(Collectors.toUnmodifiableList());
+        
+        System.out.println("Com novo item: " + comNovoItem);
+        
+        // Remover elemento (criando nova lista)
+        List<String> semB = lista1.stream()
+            .filter(s -> !s.equals("B"))
+            .collect(Collectors.toUnmodifiableList());
+        
+        System.out.println("Sem B: " + semB);
+    }
+    
+    private static void demonstrarPadroesBuilder() {
+        System.out.println("\n=== PADRÃO BUILDER PARA IMUTÁVEIS ===");
+        
+        // Builder personalizado para listas imutáveis
+        List<String> lista = new ListBuilder<String>()
+            .add("Primeiro")
+            .add("Segundo")
+            .addIf(true, "Condicional")
+            .addAll(List.of("Terceiro", "Quarto"))
+            .build();
+        
+        System.out.println("Lista construída: " + lista);
+        
+        // Builder para mapas
+        Map<String, Integer> mapa = new MapBuilder<String, Integer>()
+            .put("um", 1)
+            .put("dois", 2)
+            .putIf(true, "três", 3)
+            .build();
+        
+        System.out.println("Mapa construído: " + mapa);
+    }
+}
+
+// Builders personalizados para collections imutáveis
+class ListBuilder<T> {
+    private final List<T> items = new ArrayList<>();
+    
+    public ListBuilder<T> add(T item) {
+        items.add(item);
+        return this;
+    }
+    
+    public ListBuilder<T> addIf(boolean condition, T item) {
+        if (condition) {
+            items.add(item);
+        }
+        return this;
+    }
+    
+    public ListBuilder<T> addAll(Collection<T> collection) {
+        items.addAll(collection);
+        return this;
+    }
+    
+    public List<T> build() {
+        return List.copyOf(items); // Retorna lista imutável
+    }
+}
+
+class MapBuilder<K, V> {
+    private final Map<K, V> map = new HashMap<>();
+    
+    public MapBuilder<K, V> put(K key, V value) {
+        map.put(key, value);
+        return this;
+    }
+    
+    public MapBuilder<K, V> putIf(boolean condition, K key, V value) {
+        if (condition) {
+            map.put(key, value);
+        }
+        return this;
+    }
+    
+    public Map<K, V> build() {
+        return Map.copyOf(map); // Retorna mapa imutável
+    }
+}
+```
+
+### 14.3 Guia de Collections Imutáveis
+
+| Método | Uso | Características |
+|--------|-----|-----------------|
+| `List.of()` | Listas pequenas | Não permite nulls, não permite duplicatas em Set |
+| `Set.of()` | Sets pequenos | Ordem não garantida, não permite duplicatas |
+| `Map.of()` | Maps pequenos (≤10 entradas) | Não permite nulls em chaves ou valores |
+| `Map.ofEntries()` | Maps grandes | Use com Map.entry() para clareza |
+| `List.copyOf()` | Cópia imutável de collection existente | Se já for imutável, retorna a mesma instância |
+| `Collections.unmodifiable*()` | Compatibilidade com Java < 9 | Wrapper sobre collection mutável |
+
+---
+
+## 15. Troubleshooting e Debugging
+
+### Problemas Comuns e Soluções
+
+Esta seção aborda os problemas mais frequentes ao trabalhar com Collections e suas soluções práticas.
+
+### 15.1 ConcurrentModificationException
+
+**Problema:** Modificar uma collection durante iteração.
+
+```java
+import java.util.*;
+
+public class ConcurrentModificationProblema {
+    public static void main(String[] args) {
+        demonstrarProblema();
+        demonstrarSolucoes();
+    }
+    
+    private static void demonstrarProblema() {
+        System.out.println("=== PROBLEMA: ConcurrentModificationException ===");
+        
+        List<String> lista = new ArrayList<>(Arrays.asList("A", "B", "C", "D", "E"));
+        
+        try {
+            // ❌ ERRO: Modificar durante iteração
+            for (String item : lista) {
+                if (item.equals("C")) {
+                    lista.remove(item); // ConcurrentModificationException!
+                }
+            }
+        } catch (ConcurrentModificationException e) {
+            System.out.println("⚠️ Erro capturado: " + e.getClass().getSimpleName());
+        }
+    }
+    
+    private static void demonstrarSolucoes() {
+        System.out.println("\n=== SOLUÇÕES ===");
+        
+        // Solução 1: Iterator.remove()
+        System.out.println("Solução 1: Iterator.remove()");
+        List<String> lista1 = new ArrayList<>(Arrays.asList("A", "B", "C", "D", "E"));
+        Iterator<String> it = lista1.iterator();
+        while (it.hasNext()) {
+            String item = it.next();
+            if (item.equals("C")) {
+                it.remove(); // ✅ Correto!
+            }
+        }
+        System.out.println("Resultado: " + lista1);
+        
+        // Solução 2: removeIf() (Java 8+)
+        System.out.println("\nSolução 2: removeIf()");
+        List<String> lista2 = new ArrayList<>(Arrays.asList("A", "B", "C", "D", "E"));
+        lista2.removeIf(item -> item.equals("C")); // ✅ Mais elegante!
+        System.out.println("Resultado: " + lista2);
+        
+        // Solução 3: Coletar em nova lista
+        System.out.println("\nSolução 3: Stream + collect");
+        List<String> lista3 = new ArrayList<>(Arrays.asList("A", "B", "C", "D", "E"));
+        List<String> filtrada = lista3.stream()
+            .filter(item -> !item.equals("C"))
+            .collect(Collectors.toList());
+        System.out.println("Resultado: " + filtrada);
+        
+        // Solução 4: Iterar por índice (reverso)
+        System.out.println("\nSolução 4: Loop reverso por índice");
+        List<String> lista4 = new ArrayList<>(Arrays.asList("A", "B", "C", "D", "E"));
+        for (int i = lista4.size() - 1; i >= 0; i--) {
+            if (lista4.get(i).equals("C")) {
+                lista4.remove(i); // ✅ Seguro em ordem reversa
+            }
+        }
+        System.out.println("Resultado: " + lista4);
+    }
+}
+```
+
+### 15.2 Memory Leaks com Collections
+
+**Problema:** Collections que crescem indefinidamente ou mantêm referências desnecessárias.
+
+```java
+import java.util.*;
+import java.lang.ref.WeakReference;
+
+public class MemoryLeakProblemas {
+    
+    // ❌ PROBLEMA: Static collections que nunca são limpas
+    private static final Map<String, Object> cache = new HashMap<>();
+    
+    // ❌ PROBLEMA: Listeners que não são removidos
+    private static final List<EventListener> listeners = new ArrayList<>();
+    
+    public static void main(String[] args) {
+        demonstrarProblemasMemoria();
+        demonstrarSolucoes();
+    }
+    
+    private static void demonstrarProblemasMemoria() {
+        System.out.println("=== PROBLEMAS DE MEMORIA ===");
+        
+        // Problema 1: Cache sem limite
+        for (int i = 0; i < 10000; i++) {
+            cache.put("key" + i, new LargeObject());
+            // Cache cresce indefinidamente - Memory Leak!
+        }
+        System.out.println("Cache size (problema): " + cache.size());
+        
+        // Problema 2: SubList mantém referência à lista original
+        List<Integer> grandeList = new ArrayList<>();
+        for (int i = 0; i < 100000; i++) {
+            grandeList.add(i);
+        }
+        
+        List<Integer> pequenaSublist = grandeList.subList(0, 10); // Referência toda a grandeList!
+        // grandeList não pode ser coletada pelo GC mesmo se não usada
+        
+        System.out.println("Sublist size: " + pequenaSublist.size());
+        System.out.println("⚠️ Lista original não pode ser coletada pelo GC!");
+    }
+    
+    private static void demonstrarSolucoes() {
+        System.out.println("\n=== SOLUÇÕES ===");
+        
+        // Solução 1: Cache com limite (LRU)
+        Map<String, Object> cacheComLimite = new LinkedHashMap<String, Object>(16, 0.75f, true) {
+            @Override
+            protected boolean removeEldestEntry(Map.Entry<String, Object> eldest) {
+                return size() > 1000; // Limite máximo
+            }
+        };
+        
+        for (int i = 0; i < 2000; i++) {
+            cacheComLimite.put("key" + i, new SmallObject());
+        }
+        System.out.println("Cache com limite: " + cacheComLimite.size()); // Máximo 1000
+        
+        // Solução 2: WeakHashMap para referências fracas
+        Map<Object, String> weakMap = new WeakHashMap<>();
+        Object key = new Object();
+        weakMap.put(key, "valor");
+        System.out.println("WeakMap antes GC: " + weakMap.size());
+        
+        key = null; // Remover referência forte
+        System.gc(); // Sugerir coleta de lixo
+        System.runFinalization();
+        
+        System.out.println("WeakMap após GC: " + weakMap.size()); // Pode ser 0
+        
+        // Solução 3: Cópia da sublist
+        List<Integer> outraGrandeList = new ArrayList<>();
+        for (int i = 0; i < 100000; i++) {
+            outraGrandeList.add(i);
+        }
+        
+        List<Integer> copiaSublist = new ArrayList<>(outraGrandeList.subList(0, 10));
+        outraGrandeList = null; // Agora pode ser coletada!
+        System.out.println("Cópia da sublist: " + copiaSublist.size());
+        
+        // Solução 4: Limpeza explícita
+        demonstrarLimpezaExplicita();
+    }
+    
+    private static void demonstrarLimpezaExplicita() {
+        System.out.println("\n=== LIMPEZA EXPLÍCITA ===");
+        
+        // Padrão: Método cleanup() para liberar recursos
+        ResourceManager manager = new ResourceManager();
+        manager.addResource("resource1");
+        manager.addResource("resource2");
+        
+        System.out.println("Recursos antes limpeza: " + manager.getResourceCount());
+        manager.cleanup(); // Limpeza explícita
+        System.out.println("Recursos após limpeza: " + manager.getResourceCount());
+    }
+    
+    static class LargeObject {
+        private final byte[] data = new byte[1024]; // 1KB
+    }
+    
+    static class SmallObject {
+        private final int value = 42;
+    }
+    
+    interface EventListener {
+        void onEvent();
+    }
+}
+
+class ResourceManager {
+    private final List<String> resources = new ArrayList<>();
+    
+    public void addResource(String resource) {
+        resources.add(resource);
+    }
+    
+    public int getResourceCount() {
+        return resources.size();
+    }
+    
+    public void cleanup() {
+        resources.clear(); // Limpeza explícita
+        // Outras operações de limpeza...
+    }
+}
+```
+
+### 15.3 Performance Issues e Otimizações
+
+```java
+import java.util.*;
+
+public class PerformanceIssues {
+    public static void main(String[] args) {
+        demonstrarProblemasPerformance();
+        demonstrarOtimizacoes();
+    }
+    
+    private static void demonstrarProblemasPerformance() {
+        System.out.println("=== PROBLEMAS DE PERFORMANCE ===");
+        
+        // Problema 1: ArrayList.contains() com muitos elementos
+        List<Integer> grandeList = new ArrayList<>();
+        for (int i = 0; i < 100000; i++) {
+            grandeList.add(i);
+        }
+        
+        long inicio = System.nanoTime();
+        boolean contem = grandeList.contains(99999); // O(n) - lento!
+        long tempoList = System.nanoTime() - inicio;
+        
+        System.out.println("ArrayList.contains(): " + tempoList + "ns (lento)");
+        
+        // Problema 2: Usar LinkedList para acesso aleatório
+        List<Integer> linkedList = new LinkedList<>(grandeList);
+        
+        inicio = System.nanoTime();
+        int elemento = linkedList.get(50000); // O(n) - muito lento!
+        long tempoLinked = System.nanoTime() - inicio;
+        
+        System.out.println("LinkedList.get(): " + tempoLinked + "ns (muito lento)");
+        
+        // Problema 3: Boxing/Unboxing desnecessário
+        List<Integer> numeros = new ArrayList<>();
+        inicio = System.nanoTime();
+        for (int i = 0; i < 100000; i++) {
+            numeros.add(i); // Boxing de int para Integer
+        }
+        long tempoBoxing = System.nanoTime() - inicio;
+        
+        System.out.println("Boxing em ArrayList: " + tempoBoxing + "ns");
+    }
+    
+    private static void demonstrarOtimizacoes() {
+        System.out.println("\n=== OTIMIZAÇÕES ===");
+        
+        // Otimização 1: HashSet para contains()
+        Set<Integer> grandeSet = new HashSet<>();
+        for (int i = 0; i < 100000; i++) {
+            grandeSet.add(i);
+        }
+        
+        long inicio = System.nanoTime();
+        boolean contem = grandeSet.contains(99999); // O(1) - rápido!
+        long tempoSet = System.nanoTime() - inicio;
+        
+        System.out.println("HashSet.contains(): " + tempoSet + "ns (rápido)");
+        
+        // Otimização 2: ArrayList para acesso aleatório
+        List<Integer> arrayList = new ArrayList<>();
+        for (int i = 0; i < 100000; i++) {
+            arrayList.add(i);
+        }
+        
+        inicio = System.nanoTime();
+        int elemento = arrayList.get(50000); // O(1) - rápido!
+        long tempoArray = System.nanoTime() - inicio;
+        
+        System.out.println("ArrayList.get(): " + tempoArray + "ns (rápido)");
+        
+        // Otimização 3: Collections primitivas (conceitual)
+        // Em projetos reais, considere bibliotecas como Trove ou Eclipse Collections
+        int[] arrayPrimitivo = new int[100000];
+        inicio = System.nanoTime();
+        for (int i = 0; i < 100000; i++) {
+            arrayPrimitivo[i] = i; // Sem boxing!
+        }
+        long tempoPrimitivo = System.nanoTime() - inicio;
+        
+        System.out.println("Array primitivo: " + tempoPrimitivo + "ns (sem boxing)");
+        
+        // Otimização 4: Pré-dimensionar collections
+        demonstrarPreDimensionamento();
+    }
+    
+    private static void demonstrarPreDimensionamento() {
+        System.out.println("\n=== PRÉ-DIMENSIONAMENTO ===");
+        
+        int elementos = 100000;
+        
+        // Sem pré-dimensionamento
+        long inicio = System.nanoTime();
+        List<Integer> semCapacidade = new ArrayList<>(); // Capacidade padrão: 10
+        for (int i = 0; i < elementos; i++) {
+            semCapacidade.add(i); // Múltiplas redimensionalizações!
+        }
+        long tempoSem = System.nanoTime() - inicio;
+        
+        // Com pré-dimensionamento
+        inicio = System.nanoTime();
+        List<Integer> comCapacidade = new ArrayList<>(elementos); // Capacidade correta
+        for (int i = 0; i < elementos; i++) {
+            comCapacidade.add(i); // Sem redimensionalizações!
+        }
+        long tempoCom = System.nanoTime() - inicio;
+        
+        System.out.println("Sem pré-dimensionamento: " + tempoSem + "ns");
+        System.out.println("Com pré-dimensionamento: " + tempoCom + "ns");
+        System.out.println("Melhoria: " + ((double)tempoSem / tempoCom) + "x mais rápido");
+    }
+}
+```
+
+### 15.4 Debugging Collections
+
+```java
+import java.util.*;
+
+public class DebuggingCollections {
+    public static void main(String[] args) {
+        demonstrarTecnicasDebug();
+        demonstrarValidacoes();
+    }
+    
+    private static void demonstrarTecnicasDebug() {
+        System.out.println("=== TÉCNICAS DE DEBUG ===");
+        
+        List<String> lista = new ArrayList<>(Arrays.asList("A", "B", "C", "B", "D"));
+        
+        // 1. Imprimir estado da collection
+        System.out.println("Estado atual: " + lista);
+        System.out.println("Tamanho: " + lista.size());
+        System.out.println("Vazia: " + lista.isEmpty());
+        
+        // 2. Verificar duplicatas
+        Set<String> semDuplicatas = new LinkedHashSet<>(lista);
+        if (semDuplicatas.size() != lista.size()) {
+            System.out.println("⚠️ Encontradas duplicatas!");
+            Map<String, Integer> contagem = new HashMap<>();
+            for (String item : lista) {
+                contagem.merge(item, 1, Integer::sum);
+            }
+            contagem.entrySet().stream()
+                    .filter(entry -> entry.getValue() > 1)
+                    .forEach(entry -> System.out.println("  " + entry.getKey() + 
+                           " aparece " + entry.getValue() + " vezes"));
+        }
+        
+        // 3. Verificar ordem
+        List<String> ordenada = new ArrayList<>(lista);
+        Collections.sort(ordenada);
+        if (!lista.equals(ordenada)) {
+            System.out.println("⚠️ Lista não está ordenada");
+            System.out.println("Ordenada seria: " + ordenada);
+        }
+        
+        // 4. Encontrar elementos nulos
+        if (lista.contains(null)) {
+            System.out.println("⚠️ Lista contém elementos nulos!");
+        }
+    }
+    
+    private static void demonstrarValidacoes() {
+        System.out.println("\n=== VALIDAÇÕES AUTOMÁTICAS ===");
+        
+        // Classe wrapper para debug
+        DebugList<String> debugList = new DebugList<>();
+        debugList.add("Primeiro");
+        debugList.add("Segundo");
+        debugList.add(1, "Inserido");
+        
+        System.out.println("Lista final: " + debugList);
+        System.out.println("Operações realizadas: " + debugList.getOperationCount());
+    }
+}
+
+// Wrapper para debug de operações em List
+class DebugList<T> {
+    private final List<T> lista = new ArrayList<>();
+    private int operationCount = 0;
+    
+    public boolean add(T element) {
+        System.out.println("DEBUG: add(" + element + ")");
+        operationCount++;
+        return lista.add(element);
+    }
+    
+    public void add(int index, T element) {
+        System.out.println("DEBUG: add(" + index + ", " + element + ")");
+        operationCount++;
+        lista.add(index, element);
+    }
+    
+    public T remove(int index) {
+        T removed = lista.remove(index);
+        System.out.println("DEBUG: remove(" + index + ") -> " + removed);
+        operationCount++;
+        return removed;
+    }
+    
+    public boolean remove(Object o) {
+        boolean removed = lista.remove(o);
+        System.out.println("DEBUG: remove(" + o + ") -> " + removed);
+        operationCount++;
+        return removed;
+    }
+    
+    public T get(int index) {
+        T element = lista.get(index);
+        System.out.println("DEBUG: get(" + index + ") -> " + element);
+        return element;
+    }
+    
+    public int size() {
+        return lista.size();
+    }
+    
+    public int getOperationCount() {
+        return operationCount;
+    }
+    
+    @Override
+    public String toString() {
+        return lista.toString();
+    }
+}
+```
+
+### 15.5 Checklist de Boas Práticas
+
+```java
+public class ChecklistBoasPraticas {
+    
+    /*
+    ✅ CHECKLIST DE COLLECTIONS:
+    
+    ESCOLHA DA COLLECTION:
+    □ ArrayList para listas com acesso frequente por índice
+    □ LinkedList para inserções/remoções frequentes no meio
+    □ HashSet para busca rápida sem duplicatas
+    □ TreeSet para dados sempre ordenados
+    □ HashMap para mapeamento chave-valor com busca rápida
+    □ TreeMap para mapeamento com chaves sempre ordenadas
+    
+    INICIALIZAÇÃO:
+    □ Pré-dimensionar collections quando souber o tamanho aproximado
+    □ Usar factory methods (List.of, Set.of, Map.of) para collections imutáveis
+    □ Inicializar com Collections.emptyList() ao invés de null
+    
+    CONCORRÊNCIA:
+    □ ConcurrentHashMap para maps thread-safe
+    □ CopyOnWriteArrayList para listas com muitas leituras
+    □ BlockingQueue para comunicação entre threads
+    □ Nunca usar collections normais em ambiente multi-thread sem sincronização
+    
+    ITERAÇÃO:
+    □ Usar enhanced for quando possível: for (T item : collection)
+    □ Usar Iterator.remove() para remover durante iteração
+    □ Preferir removeIf() ao invés de iteração manual para remoção
+    □ Usar Streams para transformações complexas
+    
+    PERFORMANCE:
+    □ HashSet.contains() ao invés de ArrayList.contains() para muitos elementos
+    □ StringBuilder ao invés de concatenação em loops
+    □ Considerar arrays primitivos para grandes volumes de dados numéricos
+    □ Evitar boxing/unboxing desnecessário
+    
+    MEMORY MANAGEMENT:
+    □ Limpar collections explicitamente quando não precisar mais
+    □ Usar WeakHashMap para caches automáticos
+    □ Implementar cache com limite (LRU)
+    □ Cuidado com SubList - mantém referência à lista original
+    
+    IMUTABILIDADE:
+    □ Preferir collections imutáveis quando não precisar modificar
+    □ Usar Collections.unmodifiableXxx() para proteger collections internas
+    □ Considerar padrão Builder para construção complexa
+    
+    DEBUGGING:
+    □ Implementar toString() em classes customizadas
+    □ Usar equals() e hashCode() corretamente
+    □ Validar pré-condições (null checks, empty checks)
+    □ Log de operações críticas em collections importantes
+    */
+    
+    public static void main(String[] args) {
+        System.out.println("Use este checklist para revisar seu código com Collections!");
+        System.out.println("Consulte a documentação completa para detalhes de cada item.");
+    }
+}
+```
+
+---
+
+## 16. Mini-projeto: Sistema de Biblioteca Avançado
+
+Sistema completo que demonstra uso prático de diferentes Collections com recursos avançados como cache, concorrência e análise de dados:
+
+```java
+import java.util.*;
+import java.util.concurrent.*;
+import java.util.stream.Collectors;
+import java.time.*;
+import java.util.function.Predicate;
+
 // Classe para representar um livro
 class Livro {
-    private String isbn;
-    private String titulo;
-    private String autor;
-    private String categoria;
-    private int anoPublicacao;
-    private boolean disponivel;
+    private final String isbn;
+    private final String titulo;
+    private final String autor;
+    private final String categoria;
+    private final int anoPublicacao;
+    private volatile boolean disponivel;
+    private final Set<String> tags;
+    private int popularidade; // Número de empréstimos
     
-    public Livro(String isbn, String titulo, String autor, String categoria, int ano) {
+    public Livro(String isbn, String titulo, String autor, String categoria, int ano, String... tags) {
         this.isbn = isbn;
         this.titulo = titulo;
         this.autor = autor;
         this.categoria = categoria;
         this.anoPublicacao = ano;
         this.disponivel = true;
+        this.tags = new HashSet<>(Arrays.asList(tags));
+        this.popularidade = 0;
     }
     
-    // Getters e Setters
+    // Getters
     public String getIsbn() { return isbn; }
     public String getTitulo() { return titulo; }
     public String getAutor() { return autor; }
     public String getCategoria() { return categoria; }
     public int getAnoPublicacao() { return anoPublicacao; }
     public boolean isDisponivel() { return disponivel; }
+    public Set<String> getTags() { return Collections.unmodifiableSet(tags); }
+    public int getPopularidade() { return popularidade; }
+    
     public void setDisponivel(boolean disponivel) { this.disponivel = disponivel; }
+    public void incrementarPopularidade() { this.popularidade++; }
     
     @Override
     public String toString() {
-        return String.format("'%s' por %s (%d) - %s", 
+        return String.format("'%s' por %s (%d) - %s [Pop: %d]", 
                            titulo, autor, anoPublicacao, 
-                           disponivel ? "DISPONÍVEL" : "EMPRESTADO");
+                           disponivel ? "DISPONÍVEL" : "EMPRESTADO",
+                           popularidade);
     }
     
     @Override
@@ -684,36 +2109,75 @@ class Livro {
     }
     
     @Override
-    public int hashCode() {
-        return Objects.hash(isbn);
-    }
+    public int hashCode() { return Objects.hash(isbn); }
 }
 
-// Classe para representar um usuário
+// Registro de empréstimo
+class RegistroEmprestimo {
+    private final String isbn;
+    private final String usuarioId;
+    private final LocalDateTime dataEmprestimo;
+    private LocalDateTime dataDevolucao;
+    
+    public RegistroEmprestimo(String isbn, String usuarioId) {
+        this.isbn = isbn;
+        this.usuarioId = usuarioId;
+        this.dataEmprestimo = LocalDateTime.now();
+    }
+    
+    public void devolver() {
+        this.dataDevolucao = LocalDateTime.now();
+    }
+    
+    public boolean isAtivo() {
+        return dataDevolucao == null;
+    }
+    
+    public Duration getDuracao() {
+        LocalDateTime fim = dataDevolucao != null ? dataDevolucao : LocalDateTime.now();
+        return Duration.between(dataEmprestimo, fim);
+    }
+    
+    // Getters
+    public String getIsbn() { return isbn; }
+    public String getUsuarioId() { return usuarioId; }
+    public LocalDateTime getDataEmprestimo() { return dataEmprestimo; }
+    public LocalDateTime getDataDevolucao() { return dataDevolucao; }
+}
+
+// Classe para usuário
 class Usuario {
-    private String id;
-    private String nome;
-    private String email;
-    private List<String> livrosEmprestados; // ISBNs dos livros
+    private final String id;
+    private final String nome;
+    private final String email;
+    private final LocalDate dataRegistro;
+    // CopyOnWriteArrayList: Thread-safe para leituras frequentes
+    private final CopyOnWriteArrayList<String> livrosEmprestados;
     
     public Usuario(String id, String nome, String email) {
         this.id = id;
         this.nome = nome;
         this.email = email;
-        this.livrosEmprestados = new ArrayList<>();
+        this.dataRegistro = LocalDate.now();
+        this.livrosEmprestados = new CopyOnWriteArrayList<>();
     }
     
     public String getId() { return id; }
     public String getNome() { return nome; }
     public String getEmail() { return email; }
-    public List<String> getLivrosEmprestados() { return livrosEmprestados; }
+    public LocalDate getDataRegistro() { return dataRegistro; }
+    public List<String> getLivrosEmprestados() { return Collections.unmodifiableList(livrosEmprestados); }
     
     public void emprestarLivro(String isbn) {
         livrosEmprestados.add(isbn);
     }
     
-    public void devolverLivro(String isbn) {
-        livrosEmprestados.remove(isbn);
+    public boolean devolverLivro(String isbn) {
+        return livrosEmprestados.remove(isbn);
+    }
+    
+    public boolean podeEmprestar() {
+        return livrosEmprestados.size() < 5; // Limite de 5 livros
     }
     
     @Override
@@ -723,32 +2187,409 @@ class Usuario {
     }
 }
 
-// Sistema principal da biblioteca
-class SistemaBiblioteca {
-    // HashMap: Busca rápida de livros por ISBN
-    private Map<String, Livro> livrosPorIsbn;
+// Cache LRU para otimizar buscas frequentes
+class CacheLRU<K, V> extends LinkedHashMap<K, V> {
+    private final int capacidade;
     
-    // HashMap: Busca rápida de usuários por ID
-    private Map<String, Usuario> usuariosPorId;
-    
-    // TreeMap: Livros ordenados por categoria para relatórios
-    private Map<String, List<Livro>> livrosPorCategoria;
-    
-    // LinkedHashMap: Histórico de empréstimos (ordem cronológica)
-    private Map<String, List<String>> historicoEmprestimos;
-    
-    // PriorityQueue: Fila de espera para livros populares
-    private Map<String, Queue<String>> filasEspera;
-    
-    public SistemaBiblioteca() {
-        this.livrosPorIsbn = new HashMap<>();
-        this.usuariosPorId = new HashMap<>();
-        this.livrosPorCategoria = new TreeMap<>();
-        this.historicoEmprestimos = new LinkedHashMap<>();
-        this.filasEspera = new HashMap<>();
+    public CacheLRU(int capacidade) {
+        super(capacidade + 1, 1.0f, true);
+        this.capacidade = capacidade;
     }
     
-    // Adicionar livro ao sistema
+    @Override
+    protected boolean removeEldestEntry(Map.Entry<K, V> eldest) {
+        return size() > capacidade;
+    }
+}
+
+// Sistema principal da biblioteca (Thread-Safe)
+class SistemaBibliotecaAvancado {
+    // ConcurrentHashMap: Thread-safe para operações concorrentes
+    private final ConcurrentHashMap<String, Livro> livrosPorIsbn;
+    private final ConcurrentHashMap<String, Usuario> usuariosPorId;
+    
+    // Cache LRU para buscas frequentes
+    private final Map<String, List<Livro>> cacheBuscas;
+    
+    // TreeMap para ordenação automática
+    private final TreeMap<String, Set<String>> livrosPorCategoria;
+    
+    // Queue para processar empréstimos assíncronos
+    private final BlockingQueue<RegistroEmprestimo> filaEmprestimos;
+    
+    // Histórico completo (preserva ordem)
+    private final LinkedList<RegistroEmprestimo> historicoCompleto;
+    
+    // Estatísticas em tempo real
+    private final Map<String, Integer> estatisticasCategoria;
+    private final Map<String, Integer> estatisticasAutor;
+    
+    // Executor para processar operações assíncronas
+    private final ExecutorService executor;
+    
+    public SistemaBibliotecaAvancado() {
+        this.livrosPorIsbn = new ConcurrentHashMap<>();
+        this.usuariosPorId = new ConcurrentHashMap<>();
+        this.cacheBuscas = Collections.synchronizedMap(new CacheLRU<>(50));
+        this.livrosPorCategoria = new TreeMap<>();
+        this.filaEmprestimos = new LinkedBlockingQueue<>();
+        this.historicoCompleto = new LinkedList<>();
+        this.estatisticasCategoria = new ConcurrentHashMap<>();
+        this.estatisticasAutor = new ConcurrentHashMap<>();
+        this.executor = Executors.newFixedThreadPool(3);
+        
+        // Inicia processamento assíncrono
+        iniciarProcessamentoAssincrono();
+    }
+    
+    // Adicionar livro
+    public void adicionarLivro(Livro livro) {
+        livrosPorIsbn.put(livro.getIsbn(), livro);
+        
+        // Atualizar índice por categoria
+        livrosPorCategoria.computeIfAbsent(livro.getCategoria(), k -> new TreeSet<>())
+                         .add(livro.getIsbn());
+        
+        // Atualizar estatísticas
+        estatisticasCategoria.merge(livro.getCategoria(), 1, Integer::sum);
+        estatisticasAutor.merge(livro.getAutor(), 1, Integer::sum);
+        
+        System.out.println("✅ Livro adicionado: " + livro.getTitulo());
+    }
+    
+    // Registrar usuário
+    public void registrarUsuario(Usuario usuario) {
+        usuariosPorId.put(usuario.getId(), usuario);
+        System.out.println("✅ Usuário registrado: " + usuario.getNome());
+    }
+    
+    // Emprestar livro (assíncrono)
+    public CompletableFuture<Boolean> emprestarLivroAsync(String isbn, String usuarioId) {
+        return CompletableFuture.supplyAsync(() -> {
+            Livro livro = livrosPorIsbn.get(isbn);
+            Usuario usuario = usuariosPorId.get(usuarioId);
+            
+            if (livro == null || usuario == null) {
+                return false;
+            }
+            
+            if (!livro.isDisponivel() || !usuario.podeEmprestar()) {
+                return false;
+            }
+            
+            // Operação atômica
+            synchronized (livro) {
+                if (livro.isDisponivel()) {
+                    livro.setDisponivel(false);
+                    livro.incrementarPopularidade();
+                    usuario.emprestarLivro(isbn);
+                    
+                    // Adicionar à fila para processamento
+                    filaEmprestimos.offer(new RegistroEmprestimo(isbn, usuarioId));
+                    return true;
+                }
+            }
+            return false;
+        }, executor);
+    }
+    
+    // Devolver livro
+    public boolean devolverLivro(String isbn, String usuarioId) {
+        Livro livro = livrosPorIsbn.get(isbn);
+        Usuario usuario = usuariosPorId.get(usuarioId);
+        
+        if (livro == null || usuario == null) {
+            return false;
+        }
+        
+        if (usuario.devolverLivro(isbn)) {
+            livro.setDisponivel(true);
+            
+            // Atualizar registro histórico
+            historicoCompleto.stream()
+                    .filter(r -> r.getIsbn().equals(isbn) && 
+                               r.getUsuarioId().equals(usuarioId) && 
+                               r.isAtivo())
+                    .findFirst()
+                    .ifPresent(RegistroEmprestimo::devolver);
+            
+            System.out.println("📚 Livro devolvido: " + livro.getTitulo());
+            return true;
+        }
+        return false;
+    }
+    
+    // Busca avançada com cache
+    public List<Livro> buscarLivros(Predicate<Livro> criterio) {
+        String chaveCache = criterio.toString();
+        
+        // Verificar cache primeiro
+        List<Livro> resultado = cacheBuscas.get(chaveCache);
+        if (resultado != null) {
+            System.out.println("🎯 Resultado encontrado no cache!");
+            return resultado;
+        }
+        
+        // Busca e cache do resultado
+        resultado = livrosPorIsbn.values()
+                                .parallelStream()
+                                .filter(criterio)
+                                .collect(Collectors.toList());
+        
+        cacheBuscas.put(chaveCache, resultado);
+        return resultado;
+    }
+    
+    // Relatórios avançados
+    public void gerarRelatorioCompleto() {
+        System.out.println("\n=== RELATÓRIO COMPLETO DA BIBLIOTECA ===");
+        
+        // Estatísticas gerais
+        System.out.println("\n📊 ESTATÍSTICAS GERAIS:");
+        System.out.println("Total de livros: " + livrosPorIsbn.size());
+        System.out.println("Total de usuários: " + usuariosPorId.size());
+        System.out.println("Empréstimos ativos: " + contarEmprestimosAtivos());
+        
+        // Top 5 categorias
+        System.out.println("\n📈 TOP 5 CATEGORIAS:");
+        estatisticasCategoria.entrySet().stream()
+                .sorted(Map.Entry.<String, Integer>comparingByValue().reversed())
+                .limit(5)
+                .forEach(entry -> System.out.println(entry.getKey() + ": " + entry.getValue()));
+        
+        // Livros mais populares
+        System.out.println("\n⭐ TOP 5 LIVROS MAIS POPULARES:");
+        livrosPorIsbn.values().stream()
+                .sorted((l1, l2) -> Integer.compare(l2.getPopularidade(), l1.getPopularidade()))
+                .limit(5)
+                .forEach(livro -> System.out.println(livro.getTitulo() + " - " + livro.getPopularidade() + " empréstimos"));
+        
+        // Usuários mais ativos
+        System.out.println("\n👤 TOP 5 USUÁRIOS MAIS ATIVOS:");
+        usuariosPorId.values().stream()
+                .sorted((u1, u2) -> Integer.compare(u2.getLivrosEmprestados().size(), u1.getLivrosEmprestados().size()))
+                .limit(5)
+                .forEach(System.out::println);
+        
+        // Análise temporal
+        System.out.println("\n⏱️ ANÁLISE TEMPORAL:");
+        Map<Integer, Long> emprestimosPorMes = historicoCompleto.stream()
+                .collect(Collectors.groupingBy(
+                    r -> r.getDataEmprestimo().getMonthValue(),
+                    Collectors.counting()
+                ));
+        emprestimosPorMes.forEach((mes, count) -> 
+            System.out.println("Mês " + mes + ": " + count + " empréstimos"));
+    }
+    
+    // Busca por similaridade (usando tags)
+    public List<Livro> recomendarLivros(String isbn) {
+        Livro livroBase = livrosPorIsbn.get(isbn);
+        if (livroBase == null) return Collections.emptyList();
+        
+        return livrosPorIsbn.values().stream()
+                .filter(l -> !l.equals(livroBase))
+                .filter(l -> temSimilaridade(livroBase, l))
+                .sorted((l1, l2) -> Integer.compare(l2.getPopularidade(), l1.getPopularidade()))
+                .limit(5)
+                .collect(Collectors.toList());
+    }
+    
+    private boolean temSimilaridade(Livro l1, Livro l2) {
+        // Mesmo autor ou categoria
+        if (l1.getAutor().equals(l2.getAutor()) || 
+            l1.getCategoria().equals(l2.getCategoria())) {
+            return true;
+        }
+        
+        // Tags em comum
+        Set<String> tagsComuns = new HashSet<>(l1.getTags());
+        tagsComuns.retainAll(l2.getTags());
+        return tagsComuns.size() >= 1;
+    }
+    
+    private long contarEmprestimosAtivos() {
+        return historicoCompleto.stream()
+                .mapToLong(r -> r.isAtivo() ? 1 : 0)
+                .sum();
+    }
+    
+    private void iniciarProcessamentoAssincrono() {
+        // Thread para processar fila de empréstimos
+        executor.submit(() -> {
+            while (!Thread.currentThread().isInterrupted()) {
+                try {
+                    RegistroEmprestimo registro = filaEmprestimos.take();
+                    historicoCompleto.add(registro);
+                    System.out.println("📋 Empréstimo processado: " + registro.getIsbn());
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                    break;
+                }
+            }
+        });
+    }
+    
+// Aplicação de demonstração
+public class AplicacaoBiblioteca {
+    public static void main(String[] args) {
+        System.out.println("=== SISTEMA DE BIBLIOTECA AVANÇADO ===\n");
+        
+        SistemaBibliotecaAvancado biblioteca = new SistemaBibliotecaAvancado();
+        
+        // Adicionar alguns livros
+        biblioteca.adicionarLivro(new Livro("978-85-7522-320-4", "Clean Code", "Robert C. Martin", "Programação", 2008, "java", "qualidade", "desenvolvimento"));
+        biblioteca.adicionarLivro(new Livro("978-0-13-468599-1", "Effective Java", "Joshua Bloch", "Programação", 2017, "java", "boas-práticas"));
+        biblioteca.adicionarLivro(new Livro("978-85-7522-719-6", "Design Patterns", "GoF", "Arquitetura", 1994, "patterns", "oop"));
+        biblioteca.adicionarLivro(new Livro("978-0-321-35668-0", "Spring in Action", "Craig Walls", "Framework", 2020, "spring", "java", "web"));
+        biblioteca.adicionarLivro(new Livro("978-0-596-52068-7", "Head First Design Patterns", "Eric Freeman", "Programação", 2004, "patterns", "iniciante"));
+        
+        // Registrar usuários
+        biblioteca.registrarUsuario(new Usuario("user001", "João Silva", "joao@email.com"));
+        biblioteca.registrarUsuario(new Usuario("user002", "Maria Santos", "maria@email.com"));
+        biblioteca.registrarUsuario(new Usuario("user003", "Pedro Costa", "pedro@email.com"));
+        
+        System.out.println("\n=== EMPRÉSTIMOS ASSÍNCRONOS ===");
+        
+        // Empréstimos assíncronos usando CompletableFuture
+        CompletableFuture<Boolean> emprestimo1 = biblioteca.emprestarLivroAsync("978-85-7522-320-4", "user001");
+        CompletableFuture<Boolean> emprestimo2 = biblioteca.emprestarLivroAsync("978-0-13-468599-1", "user001");
+        CompletableFuture<Boolean> emprestimo3 = biblioteca.emprestarLivroAsync("978-85-7522-719-6", "user002");
+        
+        // Aguardar conclusão dos empréstimos
+        CompletableFuture.allOf(emprestimo1, emprestimo2, emprestimo3)
+                .thenRun(() -> System.out.println("✅ Todos os empréstimos processados!"))
+                .join();
+        
+        // Pausa para processamento assíncrono
+        try {
+            Thread.sleep(1000);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+        }
+        
+        System.out.println("\n=== BUSCA AVANÇADA ===");
+        
+        // Busca por categoria
+        List<Livro> livrosProgramacao = biblioteca.buscarLivros(
+            livro -> livro.getCategoria().equals("Programação")
+        );
+        System.out.println("📚 Livros de Programação: " + livrosProgramacao.size());
+        
+        // Busca por tags
+        List<Livro> livrosJava = biblioteca.buscarLivros(
+            livro -> livro.getTags().contains("java")
+        );
+        System.out.println("☕ Livros sobre Java: " + livrosJava.size());
+        
+        // Busca composta
+        List<Livro> livrosRecentes = biblioteca.buscarLivros(
+            livro -> livro.getAnoPublicacao() > 2010 && livro.isDisponivel()
+        );
+        System.out.println("🆕 Livros recentes disponíveis: " + livrosRecentes.size());
+        
+        System.out.println("\n=== SISTEMA DE RECOMENDAÇÃO ===");
+        
+        // Recomendações baseadas em similaridade
+        List<Livro> recomendacoes = biblioteca.recomendarLivros("978-85-7522-320-4");
+        System.out.println("🎯 Recomendações para 'Clean Code':");
+        recomendacoes.forEach(livro -> System.out.println("  • " + livro.getTitulo()));
+        
+        // Simular mais atividade
+        biblioteca.emprestarLivroAsync("978-0-321-35668-0", "user003");
+        biblioteca.emprestarLivroAsync("978-0-596-52068-7", "user003");
+        
+        // Aguardar processamento
+        try {
+            Thread.sleep(1000);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+        }
+        
+        // Devolver alguns livros
+        biblioteca.devolverLivro("978-85-7522-320-4", "user001");
+        biblioteca.devolverLivro("978-85-7522-719-6", "user002");
+        
+        // Gerar relatório completo
+        biblioteca.gerarRelatorioCompleto();
+        
+        System.out.println("\n=== DEMONSTRAÇÃO DE PERFORMANCE ===");
+        
+        // Adicionar muitos livros para testar cache
+        for (int i = 0; i < 1000; i++) {
+            biblioteca.adicionarLivro(new Livro(
+                "isbn-" + i,
+                "Livro Teste " + i,
+                "Autor " + (i % 50), // 50 autores diferentes
+                "Categoria " + (i % 10), // 10 categorias diferentes
+                2000 + (i % 24), // Anos de 2000-2023
+                "tag" + (i % 20) // 20 tags diferentes
+            ));
+        }
+        
+        // Primeira busca (sem cache)
+        long inicio = System.nanoTime();
+        List<Livro> resultado1 = biblioteca.buscarLivros(
+            livro -> livro.getAnoPublicacao() > 2020
+        );
+        long tempo1 = System.nanoTime() - inicio;
+        
+        // Segunda busca (com cache)
+        inicio = System.nanoTime();
+        List<Livro> resultado2 = biblioteca.buscarLivros(
+            livro -> livro.getAnoPublicacao() > 2020
+        );
+        long tempo2 = System.nanoTime() - inicio;
+        
+        System.out.println("\n⚡ PERFORMANCE:");
+        System.out.println("Primeira busca (sem cache): " + tempo1 + "ns - " + resultado1.size() + " resultados");
+        System.out.println("Segunda busca (com cache): " + tempo2 + "ns - " + resultado2.size() + " resultados");
+        System.out.println("Aceleração: " + (tempo1 / Math.max(tempo2, 1)) + "x mais rápido");
+        
+        // Shutdown do sistema
+        biblioteca.shutdown();
+        System.out.println("\n💤 Sistema encerrado com segurança!");
+    }
+}
+```
+
+### Demonstração de Conceitos Avançados
+
+Este sistema demonstra praticamente todos os conceitos importantes do Collections Framework:
+
+**Collections Utilizadas:**
+- `ConcurrentHashMap`: Thread-safe para operações concorrentes
+- `CopyOnWriteArrayList`: Otimizada para muitas leituras
+- `BlockingQueue`: Comunicação entre threads
+- `LinkedList`: Histórico ordenado
+- `TreeMap`: Ordenação automática por categoria
+- `HashSet`: Operações com tags sem duplicatas
+- `LinkedHashMap`: Cache LRU personalizado
+
+**Padrões de Design:**
+- **Cache LRU**: Otimização de buscas frequentes
+- **Producer-Consumer**: Processamento assíncrono de empréstimos
+- **Observer**: Atualizações de estatísticas em tempo real
+- **Strategy**: Diferentes critérios de busca
+
+**Recursos Avançados:**
+- **Thread Safety**: Operações concorrentes seguras
+- **Programação Assíncrona**: `CompletableFuture` para operações não-bloqueantes
+- **Stream API**: Processamento funcional de dados
+- **Sistema de Recomendação**: Baseado em similaridade
+- **Analytics em Tempo Real**: Estatísticas atualizadas automaticamente
+
+**Performance:**
+- Cache LRU para otimizar buscas repetidas
+- Processamento paralelo com `parallelStream()`
+- Índices otimizados para diferentes tipos de consulta
+- Memory management com limpeza automática
+
+Este projeto demonstra como construir sistemas reais e escaláveis usando o Collections Framework do Java de forma profissional.
+
+---
+
+## 17. Guia de Referência Rápida
     public void adicionarLivro(Livro livro) {
         livrosPorIsbn.put(livro.getIsbn(), livro);
         
@@ -2026,6 +3867,86 @@ public class ArraysUtilExemplo {
         Arrays.stream(frutas)
               .map(String::toUpperCase)
               .forEach(System.out::println);
+        
+        // 10. Exemplo prático: processamento avançado
+        demonstrarProcessamentoAvancado();
+    }
+    
+    private static void demonstrarProcessamentoAvancado() {
+        System.out.println("\n=== PROCESSAMENTO AVANÇADO DE ARRAYS ===");
+        
+        // Ordenação com comparador personalizado
+        String[] nomes = {"Ana", "Bruno", "Carlos", "Diana", "Eduardo"};
+        Arrays.sort(nomes, (a, b) -> Integer.compare(a.length(), b.length()));
+        System.out.println("Ordenado por tamanho: " + Arrays.toString(nomes));
+        
+        // Ordenação reversa
+        Arrays.sort(nomes, Collections.reverseOrder());
+        System.out.println("Ordem reversa: " + Arrays.toString(nomes));
+        
+        // Busca com comparador
+        Arrays.sort(nomes); // Reordena alfabeticamente
+        int pos = Arrays.binarySearch(nomes, "Carlos");
+        System.out.println("Posição de Carlos: " + pos);
+        
+        // Trabalhando com arrays paralelos
+        double[] salarios = {5000, 6000, 7000, 5500, 8000};
+        Arrays.parallelSort(salarios); // Ordenação paralela para arrays grandes
+        System.out.println("Salários ordenados: " + Arrays.toString(salarios));
+        
+        // Preenchimento paralelo com função
+        int[] quadrados = new int[10];
+        Arrays.parallelSetAll(quadrados, i -> i * i);
+        System.out.println("Quadrados: " + Arrays.toString(quadrados));
+        
+        // Operações matemáticas
+        int[] valores = {1, 2, 3, 4, 5};
+        Arrays.parallelPrefix(valores, (a, b) -> a + b); // Soma acumulativa
+        System.out.println("Soma acumulativa: " + Arrays.toString(valores));
+    }
+}
+
+// Exemplo prático: Análise de dados
+class AnaliseArrays {
+    public static void main(String[] args) {
+        System.out.println("=== ANÁLISE DE DADOS COM ARRAYS ===");
+        
+        // Dados de vendas mensais
+        double[] vendasMensais = {15000, 18000, 22000, 19000, 25000, 28000, 
+                                  30000, 27000, 24000, 21000, 19000, 23000};
+        String[] meses = {"Jan", "Fev", "Mar", "Abr", "Mai", "Jun",
+                         "Jul", "Ago", "Set", "Out", "Nov", "Dez"};
+        
+        // Análise básica
+        double total = Arrays.stream(vendasMensais).sum();
+        double media = Arrays.stream(vendasMensais).average().orElse(0.0);
+        double maximo = Arrays.stream(vendasMensais).max().orElse(0.0);
+        double minimo = Arrays.stream(vendasMensais).min().orElse(0.0);
+        
+        System.out.printf("Total anual: R$%.2f%n", total);
+        System.out.printf("Média mensal: R$%.2f%n", media);
+        System.out.printf("Melhor mês: R$%.2f%n", maximo);
+        System.out.printf("Pior mês: R$%.2f%n", minimo);
+        
+        // Encontrar índices dos melhores e piores meses
+        int indiceMelhor = IntStream.range(0, vendasMensais.length)
+                                   .reduce((i, j) -> vendasMensais[i] > vendasMensais[j] ? i : j)
+                                   .orElse(0);
+        
+        int indicePior = IntStream.range(0, vendasMensais.length)
+                                 .reduce((i, j) -> vendasMensais[i] < vendasMensais[j] ? i : j)
+                                 .orElse(0);
+        
+        System.out.println("Melhor mês: " + meses[indiceMelhor] + 
+                          " (R$" + vendasMensais[indiceMelhor] + ")");
+        System.out.println("Pior mês: " + meses[indicePior] + 
+                          " (R$" + vendasMensais[indicePior] + ")");
+        
+        // Meses acima da média
+        System.out.println("\nMeses acima da média:");
+        IntStream.range(0, vendasMensais.length)
+                .filter(i -> vendasMensais[i] > media)
+                .forEach(i -> System.out.printf("%s: R$%.2f%n", meses[i], vendasMensais[i]));
     }
 }
 ```
@@ -2437,10 +4358,181 @@ public class OperacoesStream {
         
         Map<Integer, List<String>> porTamanho = palavras.stream()
             .collect(Collectors.groupingBy(String::length));
-        System.out. 1: Inserção no final
-        testInsercaoFinal();
+        System.out.println("Agrupadas por tamanho: " + porTamanho);
         
-        // Teste 2: Inserção no início
-        testInsercaoInicio();
+        // min() e max()
+        Optional<Integer> minimo = numeros.stream().min(Integer::compareTo);
+        Optional<Integer> maximo = numeros.stream().max(Integer::compareTo);
+        System.out.println("Mínimo: " + minimo.orElse(0));
+        System.out.println("Máximo: " + maximo.orElse(0));
         
-        // Teste
+        // anyMatch, allMatch, noneMatch
+        boolean temPar = numeros.stream().anyMatch(n -> n % 2 == 0);
+        boolean todosMaioresQueZero = numeros.stream().allMatch(n -> n > 0);
+        boolean nenhumNegativo = numeros.stream().noneMatch(n -> n < 0);
+        
+        System.out.println("Tem número par: " + temPar);
+        System.out.println("Todos > 0: " + todosMaioresQueZero);
+        System.out.println("Nenhum negativo: " + nenhumNegativo);
+        
+        // findFirst, findAny
+        Optional<Integer> primeiro = numeros.stream().findFirst();
+        Optional<Integer> qualquerPar = numeros.stream().filter(n -> n % 2 == 0).findAny();
+        
+        primeiro.ifPresent(n -> System.out.println("Primeiro: " + n));
+        qualquerPar.ifPresent(n -> System.out.println("Qualquer par: " + n));
+        
+        // Collectors avançados
+        demonstrarCollectorsAvancados();
+    }
+    
+    private static void demonstrarCollectorsAvancados() {
+        System.out.println("\n=== COLLECTORS AVANÇADOS ===");
+        
+        List<String> produtos = Arrays.asList(
+            "Notebook", "Mouse", "Teclado", "Monitor", "WebCam", "Mousepad"
+        );
+        
+        // Partitioning (dividir em true/false)
+        Map<Boolean, List<String>> partidosPorTamanho = produtos.stream()
+            .collect(Collectors.partitioningBy(p -> p.length() > 5));
+        
+        System.out.println("Nomes curtos: " + partidosPorTamanho.get(false));
+        System.out.println("Nomes longos: " + partidosPorTamanho.get(true));
+        
+        // Counting
+        Map<Integer, Long> contagemPorTamanho = produtos.stream()
+            .collect(Collectors.groupingBy(
+                String::length,
+                Collectors.counting()
+            ));
+        System.out.println("Contagem por tamanho: " + contagemPorTamanho);
+        
+        // Summarizing
+        IntSummaryStatistics estatisticas = produtos.stream()
+            .collect(Collectors.summarizingInt(String::length));
+        
+        System.out.printf("Estatísticas de tamanho - Min: %d, Max: %d, Média: %.1f%n",
+                         estatisticas.getMin(), estatisticas.getMax(), estatisticas.getAverage());
+        
+        // Mapping e downstream collectors
+        Map<Character, List<String>> porPrimeiraLetra = produtos.stream()
+            .collect(Collectors.groupingBy(
+                p -> p.charAt(0),
+                Collectors.mapping(String::toUpperCase, Collectors.toList())
+            ));
+        System.out.println("Por primeira letra (maiúsculo): " + porPrimeiraLetra);
+        
+        // Collectors personalizados com reduce
+        String concatenado = produtos.stream()
+            .collect(Collectors.reducing("", String::concat));
+        System.out.println("Concatenação: " + concatenado);
+        
+        // ToMap com merge function
+        Map<Integer, String> mapaPorTamanho = produtos.stream()
+            .collect(Collectors.toMap(
+                String::length,
+                p -> p,
+                (existente, novo) -> existente + ", " + novo
+            ));
+        System.out.println("Mapa por tamanho: " + mapaPorTamanho);
+    }
+}
+
+### 11.5 Streams Infinitos e Operações Avançadas
+
+```java
+import java.util.*;
+import java.util.stream.*;
+
+public class StreamsAvancados {
+    public static void main(String[] args) {
+        demonstrarStreamsInfinitos();
+        demonstrarOperacoesCustomizadas();
+    }
+    
+    private static void demonstrarStreamsInfinitos() {
+        System.out.println("=== STREAMS INFINITOS ===");
+        
+        // Stream.generate() - gerar valores infinitos
+        System.out.println("10 números aleatórios:");
+        Stream.generate(Math::random)
+              .limit(10)
+              .forEach(n -> System.out.printf("%.3f ", n));
+        
+        System.out.println("\n\n5 UUIDs:");
+        Stream.generate(UUID::randomUUID)
+              .limit(5)
+              .forEach(System.out::println);
+        
+        // Stream.iterate() - sequências
+        System.out.println("\nFibonacci (primeiros 10):");
+        Stream.iterate(new long[]{0, 1}, fib -> new long[]{fib[1], fib[0] + fib[1]})
+              .limit(10)
+              .mapToLong(fib -> fib[0])
+              .forEach(n -> System.out.print(n + " "));
+        
+        System.out.println("\n\nPotências de 2:");
+        Stream.iterate(1, n -> n * 2)
+              .limit(10)
+              .forEach(n -> System.out.print(n + " "));
+        
+        // IntStream, LongStream, DoubleStream
+        System.out.println("\n\n=== PRIMITIVE STREAMS ===");
+        
+        // Ranges
+        System.out.println("Números de 1 a 10:");
+        IntStream.rangeClosed(1, 10).forEach(n -> System.out.print(n + " "));
+        
+        System.out.println("\nSoma 1 a 100: " + IntStream.rangeClosed(1, 100).sum());
+        System.out.println("Média 1 a 100: " + IntStream.rangeClosed(1, 100).average().orElse(0));
+        
+        // Números primos usando streams
+        System.out.println("\nNúmeros primos até 50:");
+        IntStream.rangeClosed(2, 50)
+                .filter(StreamsAvancados::ehPrimo)
+                .forEach(n -> System.out.print(n + " "));
+        
+        System.out.println();
+    }
+    
+    private static void demonstrarOperacoesCustomizadas() {
+        System.out.println("\n=== OPERAÇÕES CUSTOMIZADAS ===");
+        
+        List<String> palavras = Arrays.asList(
+            "Java", "Python", "JavaScript", "C++", "Go", "Rust", "Kotlin"
+        );
+        
+        // peek() para debug
+        List<String> resultado = palavras.stream()
+            .filter(p -> p.length() > 3)
+            .peek(p -> System.out.println("Filtrado: " + p))
+            .map(String::toUpperCase)
+            .peek(p -> System.out.println("Maiúsculo: " + p))
+            .collect(Collectors.toList());
+        
+        System.out.println("Resultado final: " + resultado);
+        
+        // takeWhile e dropWhile (Java 9+)
+        List<Integer> numeros = Arrays.asList(1, 3, 5, 8, 9, 11, 13, 16);
+        
+        System.out.println("\nTakeWhile (ímpares):");
+        numeros.stream()
+               .takeWhile(n -> n % 2 != 0)
+               .forEach(n -> System.out.print(n + " "));
+        
+        System.out.println("\nDropWhile (pular ímpares):");
+        numeros.stream()
+               .dropWhile(n -> n % 2 != 0)
+               .forEach(n -> System.out.print(n + " "));
+        
+        System.out.println();
+    }
+    
+    // Método auxiliar para verificar se é primo
+    private static boolean ehPrimo(int n) {
+        if (n < 2) return false;
+        return IntStream.rangeClosed(2, (int) Math.sqrt(n))
+                       .allMatch(i -> n % i != 0);
+    }
+}
