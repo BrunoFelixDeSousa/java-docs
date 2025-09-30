@@ -5,7 +5,7 @@ description: "Padrões avançados para código Java 21+ com Object Calisthenics,
 
 # Padrões Java 21+ Enterprise - Object Calisthenics
 
-Aplicar as [instruções gerais](./copilot-instructions.md) e [Clean Architecture](./architecture.instructions.md) a todo código Java.
+Aplicar as [instruções gerais](./copilot.instructions.md) e [Clean Architecture](./architecture.instructions.md) a todo código Java.
 
 ## Objetivo
 
