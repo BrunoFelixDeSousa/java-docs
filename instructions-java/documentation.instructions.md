@@ -9,23 +9,30 @@ Aplicar as [instruções gerais](./copilot-instructions.md) para toda documenta�
 
 ## JavaDoc - Padrões
 
-### Classes de Domínio
+### ## 🚀 Tecnologias
+
+- **GraalVM JDK 21+**:
+  - Java Features: Records, Pattern Matching, Text Blocks, Sealed Classes, Virtual Threads, Sequenced Collections
+  - GraalVM Native Image: Compilação nativa para startup ultrarrápido e baixo uso de memória
+  - GraalVM Compiler: Otimizações JIT avançadas para melhor performance em runtime
+- **Quarkus 3+**: Framework reativo para microsserviços otimizado para GraalVM Native Imageses de Domínio
+
 ```java
 /**
  * Representa um usuário no sistema.
- * 
+ *
  * <p>Esta classe implementa os princípios de Object Calisthenics:
  * - Máximo 2 variáveis de instância
  * - Sem getters/setters tradicionais
  * - Métodos pequenos e focados
- * 
+ *
  * <p><strong>Invariantes:</strong>
  * <ul>
  *   <li>ID não pode ser nulo</li>
  *   <li>Email deve ter formato válido</li>
  *   <li>Nome não pode ser vazio</li>
  * </ul>
- * 
+ *
  * @author Sistema de Gestão
  * @since 1.0.0
  * @see UserId
@@ -33,24 +40,24 @@ Aplicar as [instruções gerais](./copilot-instructions.md) para toda documenta�
  * @see UserName
  */
 public class User {
-    
+
     /**
      * Identificador único do usuário.
-     * 
+     *
      * <p>Gerado automaticamente durante a criação e nunca alterado.
      */
     private final UserId id;
-    
+
     /**
      * Cria um novo usuário com os dados fornecidos.
-     * 
+     *
      * <p><strong>Validações aplicadas:</strong>
      * <ul>
      *   <li>Todos os parâmetros são obrigatórios (não-nulos)</li>
      *   <li>Email deve ter formato válido</li>
      *   <li>Nome deve ter pelo menos 2 caracteres</li>
      * </ul>
-     * 
+     *
      * @param id identificador único do usuário
      * @param email endereço de email válido
      * @param name nome completo do usuário
@@ -60,17 +67,17 @@ public class User {
     public User(UserId id, Email email, UserName name) {
         // implementação
     }
-    
+
     /**
      * Altera o email do usuário.
-     * 
+     *
      * <p><strong>Regras de Negócio:</strong>
      * <ul>
      *   <li>Novo email deve ser diferente do atual</li>
      *   <li>Novo email não pode estar em uso por outro usuário</li>
      *   <li>Retorna nova instância (imutabilidade)</li>
      * </ul>
-     * 
+     *
      * @param newEmail novo endereço de email
      * @return nova instância de User com email alterado
      * @throws EmailAlreadyExistsException se o email já estiver em uso
@@ -84,10 +91,11 @@ public class User {
 ```
 
 ### Use Cases
+
 ```java
 /**
  * Caso de uso responsável pela criação de novos usuários no sistema.
- * 
+ *
  * <p>Este use case implementa as seguintes validações e regras de negócio:
  * <ul>
  *   <li>Validação de formato de email</li>
@@ -95,7 +103,7 @@ public class User {
  *   <li>Geração automática de ID</li>
  *   <li>Publicação de evento de criação</li>
  * </ul>
- * 
+ *
  * <p><strong>Fluxo Principal:</strong>
  * <ol>
  *   <li>Validar dados de entrada</li>
@@ -104,7 +112,7 @@ public class User {
  *   <li>Persistir no repositório</li>
  *   <li>Publicar evento UserCreatedEvent</li>
  * </ol>
- * 
+ *
  * @author Sistema de Gestão
  * @since 1.0.0
  * @see CreateUserCommand
@@ -113,17 +121,17 @@ public class User {
  */
 @ApplicationScoped
 public class CreateUserUseCase {
-    
+
     /**
      * Executa o caso de uso de criação de usuário.
-     * 
+     *
      * <p><strong>Possíveis resultados:</strong>
      * <ul>
      *   <li>{@link CreateUserResult.Success} - Usuário criado com sucesso</li>
      *   <li>{@link CreateUserResult.ValidationError} - Erro de validação</li>
      *   <li>{@link CreateUserResult.SystemError} - Erro interno do sistema</li>
      * </ul>
-     * 
+     *
      * @param command dados necessários para criar o usuário
      * @return resultado da operação encapsulado em {@link CreateUserResult}
      * @throws NullPointerException se command for nulo
@@ -135,15 +143,16 @@ public class CreateUserUseCase {
 ```
 
 ### APIs REST
+
 ```java
 /**
  * Controller REST para gerenciamento de usuários.
- * 
+ *
  * <p>Implementa os endpoints para operações CRUD de usuários,
  * seguindo os padrões REST e Clean Architecture.
- * 
+ *
  * <p><strong>Base Path:</strong> {@code /api/v1/users}
- * 
+ *
  * <p><strong>Códigos de Status HTTP:</strong>
  * <ul>
  *   <li>200 OK - Operação executada com sucesso</li>
@@ -152,7 +161,7 @@ public class CreateUserUseCase {
  *   <li>404 Not Found - Recurso não encontrado</li>
  *   <li>500 Internal Server Error - Erro interno</li>
  * </ul>
- * 
+ *
  * @author Sistema de Gestão
  * @since 1.0.0
  */
@@ -160,10 +169,10 @@ public class CreateUserUseCase {
 @ApplicationScoped
 @Tag(name = "Users", description = "User management operations")
 public class UserController {
-    
+
     /**
      * Cria um novo usuário no sistema.
-     * 
+     *
      * <p><strong>Exemplo de Request:</strong>
      * <pre>{@code
      * {
@@ -171,7 +180,7 @@ public class UserController {
      *   "email": "joao@example.com"
      * }
      * }</pre>
-     * 
+     *
      * <p><strong>Exemplo de Response (201):</strong>
      * <pre>{@code
      * {
@@ -182,7 +191,7 @@ public class UserController {
      *   "createdAt": "2024-01-15T10:30:00Z"
      * }
      * }</pre>
-     * 
+     *
      * @param request dados do usuário a ser criado
      * @return resposta HTTP com dados do usuário criado ou erro
      * @since 1.0.0
@@ -191,7 +200,7 @@ public class UserController {
     @Operation(summary = "Create a new user", description = "Creates a new user in the system")
     @APIResponses({
         @APIResponse(
-            responseCode = "201", 
+            responseCode = "201",
             description = "User created successfully",
             content = @Content(
                 mediaType = "application/json",
@@ -199,7 +208,7 @@ public class UserController {
             )
         ),
         @APIResponse(
-            responseCode = "400", 
+            responseCode = "400",
             description = "Validation error",
             content = @Content(
                 mediaType = "application/json",
@@ -207,7 +216,7 @@ public class UserController {
             )
         ),
         @APIResponse(
-            responseCode = "500", 
+            responseCode = "500",
             description = "Internal server error"
         )
     })
@@ -224,18 +233,20 @@ public class UserController {
 
 ## 📋 Visão Geral
 
-Sistema desenvolvido em Java 17+ com Quarkus 3+ seguindo os princípios de Clean Architecture e Object Calisthenics para gerenciamento de usuários.
+Sistema desenvolvido com GraalVM JDK 21+ e Quarkus 3+ seguindo os princípios de Clean Architecture e Object Calisthenics para gerenciamento de usuários.
 
 ## 🏗️ Arquitetura
 
 ### Estrutura de Camadas
 ```
+
 src/main/java/
-├── domain/           # Regras de negócio (Entities, Value Objects)
-├── application/      # Casos de uso
-├── infrastructure/   # Adapters (DB, External Services)
-└── presentation/     # Controllers, DTOs
-```
+├── domain/ # Regras de negócio (Entities, Value Objects)
+├── application/ # Casos de uso
+├── infrastructure/ # Adapters (DB, External Services)
+└── presentation/ # Controllers, DTOs
+
+````
 
 ### Princípios Aplicados
 - **Clean Architecture**: Separação clara de responsabilidades
@@ -270,11 +281,12 @@ src/main/java/
         <artifactId>quarkus-smallrye-openapi</artifactId>
     </dependency>
 </dependencies>
-```
+````
 
 ## 🏃‍♂️ Como Executar
 
 ### Desenvolvimento
+
 ```bash
 # Subir banco de dados local
 docker-compose up -d postgres
@@ -284,6 +296,7 @@ docker-compose up -d postgres
 ```
 
 ### Testes
+
 ```bash
 # Testes unitários
 ./mvnw test
@@ -296,6 +309,7 @@ docker-compose up -d postgres
 ```
 
 ### Produção
+
 ```bash
 # Build nativo
 ./mvnw package -Pnative
@@ -312,6 +326,7 @@ docker-compose up -d postgres
 ## 🧪 Exemplos de Uso
 
 ### Criar Usuário
+
 ```bash
 curl -X POST http://localhost:8080/api/v1/users \
   -H "Content-Type: application/json" \
@@ -322,6 +337,7 @@ curl -X POST http://localhost:8080/api/v1/users \
 ```
 
 ### Buscar Usuário
+
 ```bash
 curl http://localhost:8080/api/v1/users/123e4567-e89b-12d3-a456-426614174000
 ```
@@ -329,6 +345,7 @@ curl http://localhost:8080/api/v1/users/123e4567-e89b-12d3-a456-426614174000
 ## 🏗️ Padrões de Desenvolvimento
 
 ### Object Calisthenics
+
 1. ✅ Um nível de indentação por método
 2. ✅ Não use ELSE
 3. ✅ Encapsule todos os primitivos
@@ -340,8 +357,9 @@ curl http://localhost:8080/api/v1/users/123e4567-e89b-12d3-a456-426614174000
 9. ✅ Sem getters/setters
 
 ### Clean Architecture
+
 - **Entities**: Core business rules
-- **Use Cases**: Application business rules  
+- **Use Cases**: Application business rules
 - **Interface Adapters**: Convert data formats
 - **Frameworks & Drivers**: External concerns
 
@@ -355,6 +373,7 @@ curl http://localhost:8080/api/v1/users/123e4567-e89b-12d3-a456-426614174000
 ## 🔧 Configuração
 
 ### Banco de Dados
+
 ```properties
 # application.properties
 quarkus.datasource.db-kind=postgresql
@@ -364,6 +383,7 @@ quarkus.datasource.jdbc.url=jdbc:postgresql://localhost:5432/userdb
 ```
 
 ### Logging
+
 ```properties
 quarkus.log.level=INFO
 quarkus.log.category."com.myproject".level=DEBUG
@@ -378,6 +398,7 @@ quarkus.log.category."com.myproject".level=DEBUG
 5. Abra Pull Request
 
 ### Code Review Checklist
+
 - [ ] Object Calisthenics aplicado
 - [ ] Clean Architecture respeitada
 - [ ] Testes com cobertura > 80%
@@ -387,7 +408,9 @@ quarkus.log.category."com.myproject".level=DEBUG
 ## 📝 Changelog
 
 ### [1.0.0] - 2024-01-15
+
 #### Adicionado
+
 - Criação inicial do projeto
 - Implementação de CRUD de usuários
 - Testes unitários e de integração
@@ -396,7 +419,8 @@ quarkus.log.category."com.myproject".level=DEBUG
 ## 📄 Licença
 
 Este projeto está licenciado sob a Licença MIT - veja o arquivo [LICENSE](LICENSE) para detalhes.
-```
+
+````
 
 ## Documentação de Arquitetura (ADRs)
 
@@ -431,21 +455,22 @@ Adotar Clean Architecture com as seguintes camadas:
 - Maior complexidade inicial
 - Mais arquivos e interfaces
 - Curva de aprendizado
-```
+````
 
 ## Comentários de Código
 
 ### Para Regras de Negócio Complexas
+
 ```java
 /**
  * Calcula o desconto aplicável baseado no perfil do cliente.
- * 
+ *
  * Regras de Negócio:
  * 1. Cliente Premium: 15% de desconto
- * 2. Cliente Regular ativo > 1 ano: 10% de desconto  
+ * 2. Cliente Regular ativo > 1 ano: 10% de desconto
  * 3. Cliente Regular ativo < 1 ano: 5% de desconto
  * 4. Cliente inativo: sem desconto
- * 
+ *
  * @param customer cliente para cálculo
  * @return percentual de desconto (0-15)
  */
@@ -454,24 +479,25 @@ public int calculateDiscountPercentage(Customer customer) {
     if (!customer.isActive()) {
         return 0;
     }
-    
+
     // Cliente premium sempre recebe desconto máximo
     if (customer.isPremium()) {
         return 15;
     }
-    
+
     // Cliente regular: desconto baseado no tempo de atividade
     return customer.isActiveForMoreThanOneYear() ? 10 : 5;
 }
 ```
 
 ### Para Object Calisthenics
+
 ```java
 // Object Calisthenics Rule #8: Máximo 2 variáveis de instância
 public class OrderProcessor {
     private final OrderRepository repository;      // 1ª variável
     private final PaymentService paymentService;  // 2ª variável
-    
+
     // ✅ Seguindo a regra: apenas 2 variáveis de instância
     // Se precisar de mais funcionalidade, extrair para outro serviço
 }

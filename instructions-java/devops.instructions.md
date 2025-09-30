@@ -12,18 +12,18 @@ Aplicar as [instruções gerais](./copilot.instructions.md) e [padrões de segur
 
 ### Dockerfile Multi-stage
 ```dockerfile
-# ✅ PADRÃO - Multi-stage build para otimização
-FROM maven:3.9-openjdk-17-slim AS builder
+# ✅ PADRÃO - Multi-stage build com GraalVM para otimização
+FROM ghcr.io/graalvm/graalvm-community:21 AS builder
 
 WORKDIR /app
 COPY pom.xml .
 COPY src ./src
 
-# Build da aplicação
-RUN mvn clean package -DskipTests
+# Build da aplicação com GraalVM JDK 21
+RUN mvn clean package -DskipTests -Pnative
 
-# Imagem de produção mínima
-FROM registry.access.redhat.com/ubi8/openjdk-17:latest
+# Imagem de produção mínima - Native Image (sem JVM)
+FROM quay.io/quarkus/quarkus-micro-image:2.0 AS native
 
 ENV LANGUAGE='en_US:en'
 
@@ -140,7 +140,7 @@ env:
 jobs:
   test:
     runs-on: ubuntu-latest
-    
+
     services:
       postgres:
         image: postgres:15
@@ -155,23 +155,25 @@ jobs:
           --health-retries 5
         ports:
           - 5432:5432
-    
+
     steps:
     - uses: actions/checkout@v4
-    
-    - name: Setup JDK 17
-      uses: actions/setup-java@v4
+
+    - name: Setup GraalVM JDK 21
+      uses: graalvm/setup-graalvm@v1
       with:
-        java-version: '17'
-        distribution: 'temurin'
+        java-version: '21'
+        distribution: 'graalvm-community'
+        github-token: ${{ secrets.GITHUB_TOKEN }}
         cache: maven
-    
+        native-image-job-reports: 'true'
+
     - name: Cache SonarCloud packages
       uses: actions/cache@v3
       with:
         path: ~/.sonar/cache
         key: ${{ runner.os }}-sonar
-        
+
     - name: Run tests
       env:
         QUARKUS_DATASOURCE_JDBC_URL: jdbc:postgresql://localhost:5432/testdb
@@ -181,7 +183,7 @@ jobs:
         mvn clean verify \
           -Dquarkus.test.profile=test \
           -Dquarkus.package.type=jar
-    
+
     - name: Generate test report
       uses: dorny/test-reporter@v1
       if: success() || failure()
@@ -189,7 +191,7 @@ jobs:
         name: Maven Tests
         path: target/surefire-reports/*.xml
         reporter: java-junit
-    
+
     - name: Upload coverage reports
       uses: codecov/codecov-action@v3
       with:
@@ -199,25 +201,26 @@ jobs:
   security-scan:
     runs-on: ubuntu-latest
     needs: test
-    
+
     steps:
     - uses: actions/checkout@v4
       with:
         fetch-depth: 0
-    
-    - name: Setup JDK 17
-      uses: actions/setup-java@v4
+
+    - name: Setup GraalVM JDK 21
+      uses: graalvm/setup-graalvm@v1
       with:
-        java-version: '17'
-        distribution: 'temurin'
+        java-version: '21'
+        distribution: 'graalvm-community'
+        github-token: ${{ secrets.GITHUB_TOKEN }}
         cache: maven
-    
+
     - name: OWASP Dependency Check
       run: |
         mvn org.owasp:dependency-check-maven:check \
           -Dformat=XML \
           -DfailBuildOnCVSS=7
-    
+
     - name: SonarCloud Analysis
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -233,24 +236,24 @@ jobs:
     runs-on: ubuntu-latest
     needs: [test, security-scan]
     if: github.event_name == 'push'
-    
+
     permissions:
       contents: read
       packages: write
-    
+
     steps:
     - uses: actions/checkout@v4
-    
+
     - name: Setup Docker Buildx
       uses: docker/setup-buildx-action@v3
-    
+
     - name: Login to Container Registry
       uses: docker/login-action@v3
       with:
         registry: ${{ env.REGISTRY }}
         username: ${{ github.actor }}
         password: ${{ secrets.GITHUB_TOKEN }}
-    
+
     - name: Extract metadata
       id: meta
       uses: docker/metadata-action@v5
@@ -261,7 +264,7 @@ jobs:
           type=ref,event=pr
           type=sha,prefix={{branch}}-
           type=raw,value=latest,enable={{is_default_branch}}
-    
+
     - name: Build and push Docker image
       uses: docker/build-push-action@v5
       with:
@@ -277,10 +280,10 @@ jobs:
     needs: build-and-push
     if: github.ref == 'refs/heads/main'
     environment: production
-    
+
     steps:
     - uses: actions/checkout@v4
-    
+
     - name: Deploy to Kubernetes
       run: |
         echo "Deployment would happen here"
@@ -436,15 +439,15 @@ data:
     # Database
     quarkus.datasource.db-kind=postgresql
     quarkus.datasource.jdbc.url=jdbc:postgresql://postgres-service:5432/myproject
-    
+
     # Observability
     quarkus.micrometer.enabled=true
     quarkus.micrometer.export.prometheus.enabled=true
-    
+
     # Security
     quarkus.http.cors=true
     quarkus.http.cors.origins=https://myproject.com
-    
+
     # Logging
     quarkus.log.level=INFO
     quarkus.log.category."com.myproject".level=DEBUG
@@ -474,16 +477,16 @@ data:
 // ✅ PADRÃO - Custom health check
 @ApplicationScoped
 public class DatabaseHealthCheck implements HealthCheck {
-    
+
     @Inject
     AgroalDataSource dataSource;
-    
+
     @Override
     public HealthCheckResponse call() {
         try (var connection = dataSource.getConnection()) {
             var statement = connection.prepareStatement("SELECT 1");
             var resultSet = statement.executeQuery();
-            
+
             if (resultSet.next() && resultSet.getInt(1) == 1) {
                 return HealthCheckResponse.up("database");
             } else {
@@ -499,15 +502,15 @@ public class DatabaseHealthCheck implements HealthCheck {
 @Readiness
 @ApplicationScoped
 public class ExternalServiceReadiness implements HealthCheck {
-    
+
     @RestClient
     PaymentServiceClient paymentService;
-    
+
     @Override
     public HealthCheckResponse call() {
         try {
             var response = paymentService.healthCheck();
-            return response.isHealthy() 
+            return response.isHealthy()
                 ? HealthCheckResponse.up("payment-service")
                 : HealthCheckResponse.down("payment-service");
         } catch (Exception e) {
@@ -522,36 +525,36 @@ public class ExternalServiceReadiness implements HealthCheck {
 // ✅ PADRÃO - Métricas customizadas
 @ApplicationScoped
 public class UserMetrics {
-    
+
     private final Counter userCreatedCounter;
     private final Timer userCreationTimer;
     private final Gauge activeUsersGauge;
-    
+
     @Inject
     UserRepository userRepository;
-    
+
     public UserMetrics(MeterRegistry meterRegistry) {
         this.userCreatedCounter = Counter.builder("users.created.total")
             .description("Total number of users created")
             .register(meterRegistry);
-            
+
         this.userCreationTimer = Timer.builder("users.creation.duration")
             .description("Time taken to create a user")
             .register(meterRegistry);
-            
+
         this.activeUsersGauge = Gauge.builder("users.active.count")
             .description("Number of active users")
             .register(meterRegistry, this, UserMetrics::getActiveUserCount);
     }
-    
+
     public void recordUserCreated() {
         userCreatedCounter.increment();
     }
-    
+
     public Timer.Sample startUserCreationTimer() {
         return Timer.start(userCreationTimer);
     }
-    
+
     private double getActiveUserCount(UserMetrics self) {
         return userRepository.countByStatus(UserStatus.ACTIVE);
     }
@@ -560,20 +563,20 @@ public class UserMetrics {
 // ✅ USO - No Use Case
 @ApplicationScoped
 public class CreateUserUseCase {
-    
+
     @Inject
     UserMetrics userMetrics;
-    
+
     public CreateUserResult execute(CreateUserCommand command) {
         var timerSample = userMetrics.startUserCreationTimer();
-        
+
         try {
             // Lógica de criação...
             var user = createUser(command);
-            
+
             userMetrics.recordUserCreated();
             return new CreateUserResult.Success(user);
-            
+
         } finally {
             timerSample.stop();
         }
@@ -586,33 +589,33 @@ public class CreateUserUseCase {
 // ✅ PADRÃO - Tracing manual quando necessário
 @ApplicationScoped
 public class OrderService {
-    
+
     @Inject
     @Tracer
     io.opentracing.Tracer tracer;
-    
+
     @Inject
     PaymentService paymentService;
-    
+
     @Traced(operationName = "process-order")
     public ProcessOrderResult processOrder(Order order) {
         var span = tracer.activeSpan();
         span.setTag("order.id", order.id().value().toString());
         span.setTag("order.value", order.totalValue().toString());
-        
+
         try {
             // Span filho para pagamento
             try (var paymentSpan = tracer.buildSpan("process-payment")
                     .asChildOf(span)
                     .start()) {
-                
+
                 paymentSpan.setTag("payment.method", order.paymentMethod());
                 var paymentResult = paymentService.processPayment(order);
                 paymentSpan.setTag("payment.status", paymentResult.status());
-                
+
                 return new ProcessOrderResult.Success(order);
             }
-            
+
         } catch (Exception e) {
             span.setTag("error", true);
             span.log(Map.of("error.message", e.getMessage()));
@@ -627,18 +630,18 @@ public class OrderService {
 // ✅ PADRÃO - Logging estruturado
 @ApplicationScoped
 public class StructuredLogger {
-    
+
     private static final Logger LOG = LoggerFactory.getLogger(StructuredLogger.class);
-    
+
     public void logUserCreated(User user) {
-        LOG.info("User created successfully", 
+        LOG.info("User created successfully",
             kv("userId", user.id().value()),
             kv("userEmail", maskEmail(user.email().value())),
             kv("timestamp", Instant.now()),
             kv("action", "USER_CREATED")
         );
     }
-    
+
     public void logUserCreationFailed(CreateUserCommand command, Exception error) {
         LOG.error("Failed to create user",
             kv("email", maskEmail(command.email())),
@@ -648,10 +651,10 @@ public class StructuredLogger {
             kv("action", "USER_CREATION_FAILED")
         );
     }
-    
+
     private String maskEmail(String email) {
         if (email == null || !email.contains("@")) return "***";
-        
+
         var parts = email.split("@");
         return parts[0].substring(0, 1) + "***@" + parts[1];
     }
@@ -725,7 +728,7 @@ spec:
       annotations:
         summary: "High error rate detected"
         description: "Error rate is {{ $value }} errors per second"
-    
+
     - alert: DatabaseConnectionFailure
       expr: up{job="myproject"} == 0
       for: 1m
@@ -734,7 +737,7 @@ spec:
       annotations:
         summary: "Database connection failed"
         description: "Application cannot connect to database"
-    
+
     - alert: HighMemoryUsage
       expr: process_resident_memory_bytes / process_virtual_memory_max_bytes > 0.8
       for: 5m
@@ -743,7 +746,7 @@ spec:
       annotations:
         summary: "High memory usage"
         description: "Memory usage is above 80%"
-    
+
     - alert: SlowResponseTime
       expr: histogram_quantile(0.95, rate(http_server_requests_seconds_bucket[5m])) > 1
       for: 5m
@@ -772,7 +775,7 @@ spec:
       },
       {
         "title": "Error Rate",
-        "type": "graph", 
+        "type": "graph",
         "targets": [
           {
             "expr": "rate(http_server_requests_seconds_count{status=~\"5..\"}[5m])",
@@ -877,7 +880,7 @@ spec:
             args:
             - -c
             - |
-              pg_dump --host=$DB_HOST --username=$DB_USER --dbname=$DB_NAME --format=custom --no-owner --no-privileges | 
+              pg_dump --host=$DB_HOST --username=$DB_USER --dbname=$DB_NAME --format=custom --no-owner --no-privileges |
               gzip > /backup/backup_$(date +%Y%m%d_%H%M%S).sql.gz
             env:
             - name: PGPASSWORD
