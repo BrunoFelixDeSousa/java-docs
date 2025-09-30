@@ -16,6 +16,46 @@
 10. [CRUD Completo - Exemplo Prático](#crud-completo-exemplo-prático)
 11. [Configuração do Projeto](#configuração-do-projeto)
 12. [Boas Práticas](#boas-práticas)
+13. [Referência Rápida de Annotations](#referência-rápida-de-annotations)
+
+### 📑 Índice de Annotations Personalizadas
+
+#### 🎯 Camadas da Aplicação
+- [@RestController](#restcontroller) - Controllers REST com configuração automática
+- [@UseCase](#usecase) - Casos de uso da camada de aplicação
+- [@DomainService](#domainservice) - Serviços de domínio
+- [@Repository](#repository) - Repositórios de dados
+
+#### 🔄 Operações CRUD
+- [@CreateOperation](#createoperation) - Operações de criação
+- [@ReadOperation](#readoperation) - Operações de leitura
+- [@UpdateOperation](#updateoperation) - Operações de atualização
+- [@DeleteOperation](#deleteoperation) - Operações de remoção
+- [@SearchOperation](#searchoperation) - Operações de busca
+
+#### 📊 Observabilidade
+- [@Monitored](#monitored) - Monitoramento com métricas e logs
+- [@Timed](#timed) - Medição de tempo de execução
+- [@Audited](#audited) - Auditoria de operações
+
+#### ✅ Validação e Segurança
+- [@ValidEmail](#validemail) - Validação de email
+- [@ValidCPF](#validcpf) - Validação de CPF
+- [@ValidCNPJ](#validcnpj) - Validação de CNPJ
+- [@AdminOnly](#adminonly) - Restrição para administradores
+- [@Authenticated](#authenticated) - Requer autenticação
+
+#### 🚀 Qualidade e Performance
+- [@Cacheable](#cacheable) - Cache de resultados
+- [@RateLimited](#ratelimited) - Limitação de taxa
+- [@CircuitBreaker](#circuitbreaker) - Padrão Circuit Breaker
+- [@Retry](#retry) - Retry automático
+
+#### 🎭 Qualificadores
+- [@Primary](#primary) - Bean primário
+- [@Secondary](#secondary) - Bean secundário
+- [@Mock](#mock) - Implementação mock
+- [@Prod](#prod) - Implementação de produção
 
 ---
 
@@ -576,7 +616,30 @@ Antes de criar uma classe, pergunte:
 
 ---
 
-## INTERCEPTADORES AUTOMÁTICOS
+## 🎯 INTERCEPTADORES AUTOMÁTICOS
+
+Os interceptadores são a "mágica" por trás das annotations. Eles executam código automaticamente antes e depois dos seus métodos, sem que você precise escrever nada!
+
+### 📝 Como Funcionam?
+
+Quando você anota um método com `@AutoLogging`, por exemplo:
+
+```java
+@AutoLogging
+public void criarUsuario(String nome) {
+    // seu código aqui
+}
+```
+
+O **interceptador** automaticamente:
+1. ✅ Loga a **entrada** do método com os parâmetros
+2. ✅ Executa **seu código**
+3. ✅ Loga a **saída** com o tempo de execução
+4. ✅ Se houver erro, loga com detalhes da exceção
+
+---
+
+### 1️⃣ AutoLogging - Logging Automático Inteligente
 
 ```java
 // ================================================================
@@ -584,142 +647,632 @@ Antes de criar uma classe, pergunte:
 // ================================================================
 
 /**
- * Interceptador automático para logging em todas as camadas
+ * Annotation para ativar logging automático em classes ou métodos.
+ * 
+ * <h2>Funcionalidades:</h2>
+ * <ul>
+ *   <li>✅ Log automático de entrada e saída de métodos</li>
+ *   <li>✅ Registro de parâmetros recebidos (configurável)</li>
+ *   <li>✅ Registro de valores retornados (configurável)</li>
+ *   <li>✅ Medição automática do tempo de execução</li>
+ *   <li>✅ Log de exceções com stack trace</li>
+ * </ul>
+ * 
+ * <h2>Onde Usar:</h2>
+ * <ul>
+ *   <li>Em <b>métodos</b> para log específico</li>
+ *   <li>Em <b>classes</b> para log em todos os métodos</li>
+ * </ul>
+ * 
+ * <h2>Exemplo de Uso:</h2>
+ * <pre>
+ * // Aplicado na classe - todos os métodos terão log
+ * {@literal @}AutoLogging(level = LogLevel.INFO, logParams = true)
+ * public class UserService {
+ *     
+ *     public User createUser(String name) {
+ *         return new User(name);
+ *     }
+ *     
+ *     // Este método sobrescreve configurações da classe
+ *     {@literal @}AutoLogging(level = LogLevel.DEBUG, logResult = true)
+ *     public User findUser(Long id) {
+ *         return repository.find(id);
+ *     }
+ * }
+ * </pre>
+ * 
+ * <h2>Saída Gerada (exemplo):</h2>
+ * <pre>
+ * INFO  → UserService.createUser called with params: [Bruno]
+ * INFO  ← UserService.createUser completed in 45ms
+ * 
+ * DEBUG → UserService.findUser called with params: [123]
+ * DEBUG ← UserService.findUser completed in 12ms with result: User{id=123, name=Bruno}
+ * </pre>
+ * 
+ * @author Sistema de Annotations
+ * @version 1.0
+ * @since 1.0
+ * 
+ * @see AutoLoggingInterceptor
  */
 @InterceptorBinding
 @Target({ElementType.TYPE, ElementType.METHOD})
 @Retention(RetentionPolicy.RUNTIME)
+@Documented
 public @interface AutoLogging {
+    
+    /**
+     * Nível de log a ser utilizado.
+     * <p>
+     * Define a severidade das mensagens de log geradas:
+     * <ul>
+     *   <li><b>TRACE</b>: Informações muito detalhadas para debug profundo</li>
+     *   <li><b>DEBUG</b>: Informações de debug para desenvolvimento</li>
+     *   <li><b>INFO</b>: Informações gerais sobre execução (padrão)</li>
+     *   <li><b>WARN</b>: Avisos sobre situações potencialmente problemáticas</li>
+     *   <li><b>ERROR</b>: Erros que não impedem a execução</li>
+     * </ul>
+     * 
+     * @return O nível de log configurado
+     */
     LogLevel level() default LogLevel.INFO;
+    
+    /**
+     * Define se os parâmetros do método devem ser logados.
+     * <p>
+     * <b>Atenção:</b> Evite logar parâmetros sensíveis como senhas, tokens
+     * ou informações pessoais. Para esses casos, use {@code logParams = false}.
+     * 
+     * <p><b>Exemplo:</b></p>
+     * <pre>
+     * // ✅ BOM - parâmetros seguros
+     * {@literal @}AutoLogging(logParams = true)
+     * public Product findProduct(Long id) { ... }
+     * 
+     * // ❌ CUIDADO - dados sensíveis
+     * {@literal @}AutoLogging(logParams = false)
+     * public User authenticate(String email, String password) { ... }
+     * </pre>
+     * 
+     * @return {@code true} para logar parâmetros (padrão), {@code false} caso contrário
+     */
     boolean logParams() default true;
+    
+    /**
+     * Define se o resultado retornado deve ser logado.
+     * <p>
+     * <b>Cuidado:</b> Para métodos que retornam grandes volumes de dados
+     * (listas, arrays), considere usar {@code logResult = false} para
+     * evitar logs muito grandes.
+     * 
+     * <p><b>Exemplo:</b></p>
+     * <pre>
+     * // ✅ BOM - resultado simples
+     * {@literal @}AutoLogging(logResult = true)
+     * public User findUserById(Long id) { ... }
+     * 
+     * // ⚠️  CUIDADO - resultado grande
+     * {@literal @}AutoLogging(logResult = false)
+     * public List&lt;Product&gt; findAllProducts() { ... }
+     * </pre>
+     * 
+     * @return {@code true} para logar resultado, {@code false} caso contrário (padrão)
+     */
     boolean logResult() default false;
+    
+    /**
+     * Define se o tempo de execução deve ser medido e logado.
+     * <p>
+     * Útil para identificar gargalos de performance e métodos lentos.
+     * O tempo é medido em milissegundos.
+     * 
+     * <p><b>Saída exemplo:</b></p>
+     * <pre>
+     * INFO  ← OrderService.processOrder completed in 1250ms
+     * </pre>
+     * 
+     * @return {@code true} para logar tempo de execução (padrão), {@code false} caso contrário
+     */
     boolean logExecutionTime() default true;
 }
 
+/**
+ * Interceptador que implementa a funcionalidade de logging automático.
+ * <p>
+ * Este interceptador é ativado automaticamente quando uma classe ou método
+ * é anotado com {@link AutoLogging}. Ele intercepta a execução do método
+ * e adiciona logs antes, depois e em caso de erro.
+ * 
+ * <h2>Funcionamento Interno:</h2>
+ * <ol>
+ *   <li><b>Antes da execução:</b> Registra entrada com parâmetros (se configurado)</li>
+ *   <li><b>Durante:</b> Executa o método original</li>
+ *   <li><b>Depois:</b> Registra saída com resultado e tempo (se configurado)</li>
+ *   <li><b>Em erro:</b> Registra exceção com detalhes e stack trace</li>
+ * </ol>
+ * 
+ * <h2>Prioridade de Execução:</h2>
+ * <p>
+ * Usa prioridade {@code APPLICATION + 10}, garantindo que execute depois
+ * de interceptadores de segurança mas antes de transações.
+ * 
+ * <h2>Exemplo de Saída de Log:</h2>
+ * <pre>
+ * // Sucesso
+ * INFO  → UserService.createUser called with params: [User{name=Bruno}]
+ * INFO  ← UserService.createUser completed in 45ms
+ * 
+ * // Erro
+ * ERROR ✗ UserService.createUser failed in 12ms with error: Email already exists
+ * </pre>
+ * 
+ * @author Sistema de Annotations
+ * @version 1.0
+ * @since 1.0
+ * 
+ * @see AutoLogging
+ * @see InvocationContext
+ */
 @AutoLogging
 @Interceptor
 @Priority(Interceptor.Priority.APPLICATION + 10)
 public class AutoLoggingInterceptor {
     
+    /** Logger estático para registrar todas as operações */
     private static final Logger LOG = LoggerFactory.getLogger(AutoLoggingInterceptor.class);
     
+    /**
+     * Método interceptador principal que envolve a execução do método anotado.
+     * <p>
+     * Este método é chamado automaticamente pelo CDI quando um método
+     * com {@link AutoLogging} é invocado.
+     * 
+     * <h3>Fluxo de Execução:</h3>
+     * <pre>
+     * 1. Captura nome da classe e do método
+     * 2. Registra log de entrada (com ou sem parâmetros)
+     * 3. Inicia cronômetro
+     * 4. Executa método original via context.proceed()
+     * 5. Calcula tempo de execução
+     * 6. Registra log de saída (com ou sem resultado)
+     * 7. Se houver exceção, registra log de erro
+     * </pre>
+     * 
+     * @param context Contexto da invocação contendo informações sobre o método,
+     *                parâmetros, target (objeto que possui o método), etc.
+     * @return O resultado retornado pelo método interceptado
+     * @throws Exception Qualquer exceção lançada pelo método original é propagada
+     *                   após ser logada
+     */
     @AroundInvoke
     public Object log(InvocationContext context) throws Exception {
+        // 1. Extrair informações do método sendo interceptado
         String className = context.getTarget().getClass().getSimpleName();
         String methodName = context.getMethod().getName();
         
+        // 2. Obter configurações da annotation (método ou classe)
         AutoLogging annotation = getAnnotation(context);
+        
+        // 3. Iniciar medição de tempo
         long startTime = System.currentTimeMillis();
         
-        // Log entrada
+        // 4. Log de ENTRADA do método
         if (annotation.logParams()) {
+            // Loga com parâmetros: → UserService.createUser called with params: [Bruno]
             LOG.info("→ {}.{} called with params: {}", 
                 className, methodName, Arrays.toString(context.getParameters()));
         } else {
+            // Loga sem parâmetros: → UserService.createUser called
             LOG.info("→ {}.{} called", className, methodName);
         }
         
         try {
+            // 5. EXECUTA o método original (seu código)
             Object result = context.proceed();
             
-            // Log saída com tempo de execução
+            // 6. Calcula tempo de execução
             long executionTime = System.currentTimeMillis() - startTime;
+            
+            // 7. Log de SAÍDA com sucesso
             if (annotation.logResult() && result != null) {
+                // Loga com resultado: ← UserService.createUser completed in 45ms with result: User{id=1}
                 LOG.info("← {}.{} completed in {}ms with result: {}", 
                     className, methodName, executionTime, result);
             } else if (annotation.logExecutionTime()) {
+                // Loga apenas tempo: ← UserService.createUser completed in 45ms
                 LOG.info("← {}.{} completed in {}ms", className, methodName, executionTime);
             }
             
             return result;
+            
         } catch (Exception e) {
+            // 8. Log de ERRO se houver exceção
             long executionTime = System.currentTimeMillis() - startTime;
+            
+            // Loga erro: ✗ UserService.createUser failed in 12ms with error: Email already exists
             LOG.error("✗ {}.{} failed in {}ms with error: {}", 
                 className, methodName, executionTime, e.getMessage());
+            
+            // Propaga a exceção (não "engole" o erro)
             throw e;
         }
     }
     
+    /**
+     * Obtém a annotation @AutoLogging do método ou da classe.
+     * <p>
+     * <b>Prioridade:</b> Se o método tiver a annotation, ela é usada.
+     * Caso contrário, busca na classe. Isso permite sobrescrever configurações
+     * da classe em métodos específicos.
+     * 
+     * <h3>Exemplo de Uso da Prioridade:</h3>
+     * <pre>
+     * {@literal @}AutoLogging(logParams = false)  // Configuração da CLASSE
+     * public class UserService {
+     *     
+     *     public void method1() { }  // Usa logParams = false (da classe)
+     *     
+     *     {@literal @}AutoLogging(logParams = true)  // Sobrescreve configuração da classe
+     *     public void method2() { }  // Usa logParams = true (do método)
+     * }
+     * </pre>
+     * 
+     * @param context Contexto da invocação
+     * @return A annotation {@link AutoLogging} encontrada
+     */
     private AutoLogging getAnnotation(InvocationContext context) {
+        // Tenta obter do método primeiro (prioridade maior)
         AutoLogging methodAnnotation = context.getMethod().getAnnotation(AutoLogging.class);
         if (methodAnnotation != null) {
             return methodAnnotation;
         }
+        
+        // Se não encontrou no método, busca na classe
         return context.getTarget().getClass().getAnnotation(AutoLogging.class);
     }
 }
 
 /**
- * Interceptador automático para métricas
+ * Enum que define os níveis de log disponíveis.
+ * <p>
+ * Os níveis seguem a hierarquia padrão de logging:
+ * TRACE &lt; DEBUG &lt; INFO &lt; WARN &lt; ERROR
+ */
+public enum LogLevel {
+    /** Log extremamente detalhado, usado apenas para debug profundo */
+    TRACE,
+    
+    /** Log de depuração para desenvolvimento */
+    DEBUG,
+    
+    /** Log informativo sobre operações normais (padrão recomendado) */
+    INFO,
+    
+    /** Log de avisos sobre situações que merecem atenção */
+    WARN,
+    
+    /** Log de erros que não impedem a execução do sistema */
+    ERROR
+}
+
+---
+
+### 2️⃣ AutoMetrics - Métricas Automáticas de Performance
+
+```java
+/**
+ * Annotation para coletar métricas automáticas de execução de métodos.
+ * <p>
+ * <b>O que são métricas?</b> São medições quantitativas que ajudam a monitorar
+ * a saúde e performance da aplicação. Exemplos: número de chamadas, tempo de execução,
+ * taxa de erro, etc.
+ * 
+ * <h2>Métricas Coletadas Automaticamente:</h2>
+ * <ul>
+ *   <li>📊 <b>Contador de chamadas</b> - Quantas vezes o método foi executado</li>
+ *   <li>⏱️  <b>Tempo de execução</b> - Quanto tempo levou cada chamada</li>
+ *   <li>❌ <b>Taxa de erro</b> - Quantas chamadas falharam</li>
+ *   <li>✅ <b>Taxa de sucesso</b> - Quantas chamadas tiveram sucesso</li>
+ * </ul>
+ * 
+ * <h2>Onde Usar:</h2>
+ * <ul>
+ *   <li>✅ Use Cases - Para medir performance de operações de negócio</li>
+ *   <li>✅ Repositories - Para medir tempo de acesso ao banco</li>
+ *   <li>✅ Gateways - Para medir chamadas a APIs externas</li>
+ *   <li>✅ Controllers - Para medir tempo de resposta dos endpoints</li>
+ * </ul>
+ * 
+ * <h2>Exemplo de Uso:</h2>
+ * <pre>
+ * // Métrica com nome automático baseado na classe/método
+ * {@literal @}AutoMetrics
+ * public class UserService {
+ *     public User createUser(String name) { ... }
+ * }
+ * // Gera métricas: userservice.createuser.calls, userservice.createuser.duration
+ * 
+ * // Métrica com nome personalizado
+ * {@literal @}AutoMetrics(name = "user.registration")
+ * public void registerUser(User user) { ... }
+ * // Gera métricas: user.registration.calls, user.registration.duration
+ * </pre>
+ * 
+ * <h2>Métricas Geradas (exemplo):</h2>
+ * <pre>
+ * userservice.createuser.calls{status="success"} = 150
+ * userservice.createuser.calls{status="error"} = 5
+ * userservice.createuser.duration{quantile="0.5"} = 0.045  (45ms - mediana)
+ * userservice.createuser.duration{quantile="0.95"} = 0.120  (120ms - 95º percentil)
+ * userservice.createuser.duration{quantile="0.99"} = 0.250  (250ms - 99º percentil)
+ * </pre>
+ * 
+ * <h2>Como Visualizar as Métricas:</h2>
+ * <ul>
+ *   <li>🔗 Prometheus: http://localhost:8080/q/metrics</li>
+ *   <li>📊 Grafana: Criar dashboards com as métricas coletadas</li>
+ *   <li>📈 Kibana: Visualizar métricas em tempo real</li>
+ * </ul>
+ * 
+ * @author Sistema de Annotations
+ * @version 1.0
+ * @since 1.0
+ * 
+ * @see AutoMetricsInterceptor
+ * @see MeterRegistry
  */
 @InterceptorBinding
 @Target({ElementType.TYPE, ElementType.METHOD})
 @Retention(RetentionPolicy.RUNTIME)
+@Documented
 public @interface AutoMetrics {
+    
+    /**
+     * Nome personalizado para as métricas geradas.
+     * <p>
+     * Se não especificado, o nome é gerado automaticamente usando:
+     * {@code <classe>.<método>} em lowercase.
+     * 
+     * <h3>Exemplos:</h3>
+     * <pre>
+     * // Nome automático
+     * {@literal @}AutoMetrics  // Gera: userservice.createuser
+     * 
+     * // Nome personalizado
+     * {@literal @}AutoMetrics(name = "user.registration")  // Gera: user.registration
+     * </pre>
+     * 
+     * <b>Boas Práticas de Nomenclatura:</b>
+     * <ul>
+     *   <li>Use pontos (.) para hierarquia: {@code user.registration.email}</li>
+     *   <li>Use underscore (_) para palavras compostas: {@code user_creation}</li>
+     *   <li>Seja descritivo mas conciso: {@code order.payment.process}</li>
+     *   <li>Evite nomes muito longos (máx. 50 caracteres)</li>
+     * </ul>
+     * 
+     * @return O nome da métrica ou string vazia para nome automático
+     */
     String name() default "";
+    
+    /**
+     * Define se deve contar o número de chamadas ao método.
+     * <p>
+     * Cria dois contadores separados:
+     * <ul>
+     *   <li>{@code <nome>.calls{status="success"}} - Chamadas bem-sucedidas</li>
+     *   <li>{@code <nome>.calls{status="error"}} - Chamadas com erro</li>
+     * </ul>
+     * 
+     * <b>Quando desabilitar:</b> Se o método é chamado milhões de vezes
+     * e você não precisa do contador (apenas tempo de execução).
+     * 
+     * @return {@code true} para contar chamadas (padrão), {@code false} caso contrário
+     */
     boolean countCalls() default true;
+    
+    /**
+     * Define se deve medir o tempo de execução do método.
+     * <p>
+     * Cria uma métrica de timer que registra:
+     * <ul>
+     *   <li>Tempo médio de execução</li>
+     *   <li>Tempo mínimo e máximo</li>
+     *   <li>Percentis (p50, p95, p99)</li>
+     *   <li>Taxa de chamadas por segundo</li>
+     * </ul>
+     * 
+     * <b>Exemplo de uso:</b>
+     * <pre>
+     * {@literal @}AutoMetrics(measureTime = true)
+     * public List&lt;Product&gt; findAllProducts() {
+     *     // Mede quanto tempo leva para buscar todos os produtos
+     * }
+     * </pre>
+     * 
+     * @return {@code true} para medir tempo (padrão), {@code false} caso contrário
+     */
     boolean measureTime() default true;
+    
+    /**
+     * Define se deve rastrear erros separadamente.
+     * <p>
+     * Quando {@code true}, cria um contador específico para erros:
+     * {@code <nome>.calls{status="error"}}
+     * 
+     * <b>Útil para:</b>
+     * <ul>
+     *   <li>Identificar métodos com alta taxa de erro</li>
+     *   <li>Criar alertas quando taxa de erro exceder threshold</li>
+     *   <li>Análise de confiabilidade da aplicação</li>
+     * </ul>
+     * 
+     * @return {@code true} para rastrear erros (padrão), {@code false} caso contrário
+     */
     boolean trackErrors() default true;
 }
 
+/**
+ * Interceptador que implementa a coleta de métricas de execução.
+ * <p>
+ * Este interceptador trabalha em conjunto com o Micrometer para coletar
+ * e exportar métricas para sistemas de monitoramento como Prometheus.
+ * 
+ * <h2>Tipos de Métricas Coletadas:</h2>
+ * <ol>
+ *   <li><b>Counter</b>: Contador incremental (chamadas, erros)</li>
+ *   <li><b>Timer</b>: Medição de tempo com histogramas e percentis</li>
+ * </ol>
+ * 
+ * <h2>Integração com Prometheus:</h2>
+ * <pre>
+ * # Adicionar no prometheus.yml
+ * scrape_configs:
+ *   - job_name: 'quarkus-app'
+ *     metrics_path: '/q/metrics'
+ *     static_configs:
+ *       - targets: ['localhost:8080']
+ * </pre>
+ * 
+ * <h2>Prioridade de Execução:</h2>
+ * <p>
+ * Usa prioridade {@code APPLICATION + 20}, executando depois do logging
+ * mas antes de transações.
+ * 
+ * @author Sistema de Annotations
+ * @version 1.0
+ * @since 1.0
+ * 
+ * @see AutoMetrics
+ * @see MeterRegistry
+ * @see Timer
+ * @see Counter
+ */
 @AutoMetrics
 @Interceptor
 @Priority(Interceptor.Priority.APPLICATION + 20)
 public class AutoMetricsInterceptor {
     
+    /**
+     * Registro de métricas do Micrometer.
+     * <p>
+     * O MeterRegistry é o componente central do Micrometer que mantém
+     * todas as métricas e as exporta para o Prometheus ou outros backends.
+     */
     @Inject
     MeterRegistry meterRegistry;
     
+    /**
+     * Intercepta a execução do método para coletar métricas.
+     * <p>
+     * <b>Fluxo de Coleta:</b>
+     * <ol>
+     *   <li>Inicia medição de tempo (se habilitado)</li>
+     *   <li>Executa método original</li>
+     *   <li>Incrementa contador de sucesso</li>
+     *   <li>Registra tempo de execução</li>
+     *   <li>Se houver erro: incrementa contador de erro</li>
+     * </ol>
+     * 
+     * @param context Contexto da invocação com informações do método
+     * @return O resultado retornado pelo método interceptado
+     * @throws Exception Qualquer exceção lançada pelo método original
+     */
     @AroundInvoke
     public Object measure(InvocationContext context) throws Exception {
+        // 1. Obter configurações da annotation
         AutoMetrics annotation = getAnnotation(context);
+        
+        // 2. Determinar nome da métrica (personalizado ou automático)
         String metricName = getMetricName(context, annotation);
         
+        // 3. Iniciar medição de tempo (se habilitado)
         Timer.Sample sample = null;
         if (annotation.measureTime()) {
             sample = Timer.start(meterRegistry);
         }
         
         try {
+            // 4. EXECUTA o método original
             Object result = context.proceed();
             
-            // Incrementar contador de sucesso
+            // 5. Incrementar contador de SUCESSO
             if (annotation.countCalls()) {
                 meterRegistry.counter(metricName + ".calls", "status", "success").increment();
             }
             
             return result;
+            
         } catch (Exception e) {
-            // Incrementar contador de erro
+            // 6. Incrementar contador de ERRO
             if (annotation.trackErrors()) {
                 meterRegistry.counter(metricName + ".calls", "status", "error").increment();
             }
+            
+            // Propaga a exceção
             throw e;
+            
         } finally {
-            // Registrar tempo de execução
+            // 7. Registrar tempo de execução (sempre executado)
             if (sample != null) {
                 sample.stop(Timer.builder(metricName + ".duration")
-                    .description("Execution time")
+                    .description("Execution time of " + metricName)
                     .register(meterRegistry));
             }
         }
     }
     
+    /**
+     * Gera o nome da métrica baseado na annotation ou no método.
+     * <p>
+     * <b>Regra de geração:</b>
+     * <ul>
+     *   <li>Se {@code name} estiver definido na annotation: usa ele</li>
+     *   <li>Caso contrário: usa {@code <classe>.<método>} em lowercase</li>
+     * </ul>
+     * 
+     * <h3>Exemplos:</h3>
+     * <pre>
+     * // Classe: UserService, Método: createUser
+     * // Nome automático: "userservice.createuser"
+     * 
+     * // Com name = "user.registration"
+     * // Nome usado: "user.registration"
+     * </pre>
+     * 
+     * @param context Contexto da invocação
+     * @param annotation Annotation @AutoMetrics
+     * @return O nome da métrica a ser usado
+     */
     private String getMetricName(InvocationContext context, AutoMetrics annotation) {
+        // Se nome personalizado está definido, usa ele
         if (!annotation.name().isEmpty()) {
             return annotation.name();
         }
         
+        // Caso contrário, gera automaticamente: classe.metodo (lowercase)
         String className = context.getTarget().getClass().getSimpleName().toLowerCase();
         String methodName = context.getMethod().getName().toLowerCase();
         return className + "." + methodName;
     }
     
+    /**
+     * Obtém a annotation @AutoMetrics do método ou da classe.
+     * <p>
+     * Prioridade: método &gt; classe
+     * 
+     * @param context Contexto da invocação
+     * @return A annotation encontrada
+     */
     private AutoMetrics getAnnotation(InvocationContext context) {
+        // Tenta obter do método primeiro
         AutoMetrics methodAnnotation = context.getMethod().getAnnotation(AutoMetrics.class);
         if (methodAnnotation != null) {
             return methodAnnotation;
         }
+        
+        // Se não encontrou, busca na classe
         return context.getTarget().getClass().getAnnotation(AutoMetrics.class);
     }
 }
