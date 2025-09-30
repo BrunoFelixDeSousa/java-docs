@@ -15,6 +15,13 @@ Este repositório contém uma coleção abrangente de guias técnicos, documenta
 - **[Projetos Práticos](./java/projetos/)**
   - **[Sistema de Reserva de Voos CLI](./java/projetos/Flight-Reservation-System-CLI.md)** - Projeto completo com arquitetura detalhada
 
+### 🔢 Versões do Java - Features Completas
+**Pasta:** [`java/`](./java/)
+- **[Java 8](./java/8/Java8-Features.md)** - Lambdas, Streams API, Optional, Date/Time API, Method References
+- **[Java 17 (LTS)](./java/17/Java17-Features.md)** - Sealed Classes, Records, Pattern Matching, Text Blocks
+- **[Java 21 (LTS)](./java/21/Java21-Features.md)** - Virtual Threads, Sequenced Collections, String Templates
+- **[Java 25](./java/25/Java25-Features.md)** - Primitive Patterns, Stream Gatherers, Value Types (Preview)
+
 ### 🎨 Padrões e Boas Práticas
 **Pasta:** [`padroes/`](./padroes/)
 - **[Princípios SOLID](./padroes/solid.md)** - Guia completo sobre os 5 princípios fundamentais do design orientado a objetos
