@@ -11,12 +11,15 @@ Este repositório contém uma coleção abrangente de guias técnicos, documenta
 
 ### ☕ Fundamentos Java
 **Pasta:** [`java/`](./java/)
-- **[Princípios SOLID](./java/solid.md)** - Guia completo sobre os 5 princípios fundamentais do design orientado a objetos
-- **[Object Calisthenics](./java/Object-Calisthenics.md)** - 9 regras para escrever código Java mais limpo e expressivo
 - **[Collections Framework](./java/Collections-Framework.md)** - Documentação completa sobre estruturas de dados em Java
-- **[CQRS](./java/CQRS.md)** - Command Query Responsibility Segregation com exemplos Java/Quarkus
 - **[Projetos Práticos](./java/projetos/)**
   - **[Sistema de Reserva de Voos CLI](./java/projetos/Flight-Reservation-System-CLI.md)** - Projeto completo com arquitetura detalhada
+
+### 🎨 Padrões e Boas Práticas
+**Pasta:** [`padroes/`](./padroes/)
+- **[Princípios SOLID](./padroes/solid.md)** - Guia completo sobre os 5 princípios fundamentais do design orientado a objetos
+- **[Object Calisthenics](./padroes/Object-Calisthenics.md)** - 9 regras para escrever código Java mais limpo e expressivo
+- **[CQRS](./padroes/CQRS.md)** - Command Query Responsibility Segregation com exemplos Java/Quarkus
 
 ### 📦 Bibliotecas e Packages
 **Pasta:** [`package/`](./package/)
@@ -29,14 +32,16 @@ Este repositório contém uma coleção abrangente de guias técnicos, documenta
 - **[Commons Lang3](./package-apache-commons/lang3.md)** - Utilitários essenciais para manipulação de strings, objetos e tipos primitivos
 
 ### 📋 Instruções e Padrões de Desenvolvimento
-**Pasta:** [`instructions/`](./instructions/)
-- **[Padrões Java](./instructions/java-coding.instructions.md)** - Object Calisthenics, Clean Architecture e performance enterprise
-- **[Arquitetura](./instructions/architecture.instructions.md)** - Diretrizes para arquitetura de software
-- **[Documentação](./instructions/documentation.instructions.md)** - Padrões para documentação técnica
-- **[DevOps](./instructions/devops.instructions.md)** - Práticas de integração e deploy
-- **[Segurança](./instructions/security.instructions.md)** - Padrões de segurança em aplicações Java
-- **[Testes](./instructions/testing.instructions.md)** - Estratégias e padrões de teste
-- **[GitHub Copilot](./instructions/copilot.instructions.md)** - Otimização do uso de IA para desenvolvimento
+**Pasta:** [`instructions-java/`](./instructions-java/)
+- **[Padrões Java](./instructions-java/java-coding.instructions.md)** - Object Calisthenics, Clean Architecture e performance enterprise
+- **[Arquitetura](./instructions-java/architecture.instructions.md)** - Diretrizes para arquitetura de software
+- **[Documentação](./instructions-java/documentation.instructions.md)** - Padrões para documentação técnica
+- **[DevOps](./instructions-java/devops.instructions.md)** - Práticas de integração e deploy
+- **[Segurança](./instructions-java/security.instructions.md)** - Padrões de segurança em aplicações Java
+- **[Testes](./instructions-java/testing.instructions.md)** - Estratégias e padrões de teste
+- **[GitHub Copilot](./instructions-java/copilot.instructions.md)** - Otimização do uso de IA para desenvolvimento
+- **[GraalVM](./instructions-java/graalvm.instructions.md)** - Compilação nativa e otimizações
+- **[Java 21 Features](./instructions-java/java21-features.instructions.md)** - Novos recursos do Java 21
 
 ## 🎯 Categorias de Conteúdo
 
