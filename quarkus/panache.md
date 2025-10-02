@@ -85,23 +85,23 @@ public class PersonRepository implements PanacheRepository<Person> {
 ### 1.3. Arquitetura do Panache
 
 ```
-┌────────────────────────────────────────────────────────────────┐
-│                    QUARKUS APPLICATION                         │
-│                                                                │
-│  ┌──────────────────┐              ┌────────────────────┐    │
-│  │  REST Resource   │──────────────│  Service Layer     │    │
-│  │  @Path("/api")   │              │  Business Logic    │    │
-│  └──────────────────┘              └─────────┬──────────┘    │
-│                                               │                │
-│  ┌────────────────────────────────────────────┼─────────────┐ │
-│  │              PANACHE LAYER                │             │ │
-│  │                                           ▼             │ │
-│  │  ┌──────────────────┐      ┌──────────────────────┐   │ │
-│  │  │  PanacheEntity   │      │ PanacheRepository    │   │ │
-│  │  │  (Active Record) │      │   (Repository)       │   │ │
-│  │  └────────┬─────────┘      └──────────┬───────────┘   │ │
+┌─────────────────────────────────────────────────────────────┐
+│                    QUARKUS APPLICATION                      │
+│                                                             │
+│  ┌──────────────────┐              ┌────────────────────┐   │
+│  │  REST Resource   │──────────────│  Service Layer     │   │
+│  │  @Path("/api")   │              │  Business Logic    │   │
+│  └──────────────────┘              └─────────┬──────────┘   │
+│                                               │             │
+│  ┌────────────────────────────────────────────┼───────────┐ │
+│  │              PANACHE LAYER                │            │ │
+│  │                                           ▼            │ │
+│  │  ┌──────────────────┐      ┌──────────────────────┐    │ │
+│  │  │  PanacheEntity   │      │ PanacheRepository    │    │ │
+│  │  │  (Active Record) │      │   (Repository)       │    │ │
+│  │  └────────┬─────────┘      └──────────┬───────────┘    │ │
 │  └───────────┼────────────────────────────┼───────────────┘ │
-│              │                            │                  │
+│              │                            │                 │
 │  ┌───────────┴────────────────────────────┴───────────────┐ │
 │  │              HIBERNATE ORM CORE                        │ │
 │  │  - Session Management                                  │ │
@@ -109,8 +109,8 @@ public class PersonRepository implements PanacheRepository<Person> {
 │  │  - Dirty Checking                                      │ │
 │  │  - Query Generation                                    │ │
 │  └──────────────────────────┬─────────────────────────────┘ │
-│                             │                                │
-└─────────────────────────────┼────────────────────────────────┘
+│                             │                               │
+└─────────────────────────────┼───────────────────────────────┘
                               │
                   ┌───────────┴──────────────┐
                   │                          │
@@ -270,13 +270,13 @@ Antes de mergulhar no Panache, é essencial entender o que o Hibernate faz.
 │  person.setAge(30);                                         │
 │  person.getAddress().setCity("São Paulo");                  │
 │                                                             │
-│  ↓ Como salvar isso em tabelas SQL? ↓                      │
+│  ↓ Como salvar isso em tabelas SQL? ↓                       │
 └─────────────────────────────────────────────────────────────┘
                               ↓
 ┌─────────────────────────────────────────────────────────────┐
 │                MUNDO RELACIONAL (SQL)                       │
 │                                                             │
-│  INSERT INTO persons (name, age) VALUES ('João', 30);      │
+│  INSERT INTO persons (name, age) VALUES ('João', 30);       │
 │  INSERT INTO addresses (person_id, city)                    │
 │    VALUES (1, 'São Paulo');                                 │
 └─────────────────────────────────────────────────────────────┘
