@@ -19,14 +19,126 @@ Framework Java moderno **supersônico** e **subatômico** para aplicações clou
 
 ## 📋 Índice
 
-- [Documentação Principal](#-documentação-principal)
-- [Core Features](#️-core-features)
-- [Data & Persistence](#-data--persistence)
-- [Security & Auth](#-security--auth)
-- [Reactive & Messaging](#-reactive--messaging)
-- [DevOps & Cloud](#️-devops--cloud)
-- [AI & ML](#-ai--ml)
-- [Guia de Estudo](#-guia-de-estudo)
+- [Por que Quarkus?](#-por-que-quarkus)
+- [🗺️ Guia de Estudo - Ordem Recomendada](#-guia-de-estudo---ordem-recomendada)
+  - [Fase 1: Fundamentos](#-fase-1-fundamentos-semana-1-2)
+  - [Fase 2: Persistência e Validação](#-fase-2-persistência-e-validação-semana-3-4)
+  - [Fase 3: Segurança](#-fase-3-segurança-semana-5-6)
+  - [Fase 4: Programação Reativa](#-fase-4-programação-reativa-semana-7-8)
+  - [Fase 5: Messaging e Eventos](#-fase-5-messaging-e-eventos-semana-9)
+  - [Fase 6: DevOps e Observabilidade](#️-fase-6-devops-e-observabilidade-semana-10-11)
+  - [Fase 7: Tópicos Avançados](#-fase-7-tópicos-avançados-semana-12)
+- [🗺️ Trilhas Alternativas](#-trilhas-alternativas-de-estudo)
+- [📊 Matriz de Pré-requisitos](#-matriz-de-pré-requisitos)
+- [⏱️ Estimativa de Tempo](#️-estimativa-de-tempo-por-documento)
+- [🎯 Checklist de Progresso](#-checklist-de-progresso)
+- [💡 Dicas de Estudo](#-dicas-de-estudo)
+- [Documentação por Categoria](#-documentação-por-categoria)
+  - [Core Features](#️-core-features)
+  - [Data & Persistence](#-data--persistence)
+  - [Security & Auth](#-security--auth)
+  - [Reactive & Messaging](#-reactive--messaging)
+  - [DevOps & Cloud](#️-devops--cloud)
+  - [AI & ML](#-ai--ml)
+  - [Outras Features](#️-outras-features)
+- [Recursos Adicionais](#-recursos-adicionais)
+
+---
+
+## 🚀 Início Rápido
+
+**Novo no Quarkus?** Comece aqui:
+
+1. 📖 Leia **[Por que Quarkus?](#-por-que-quarkus)**
+2. 🗺️ Escolha sua **[Trilha de Estudo](#-guia-de-estudo---ordem-recomendada)**
+3. ✅ Marque seu progresso no **[Checklist](#-checklist-de-progresso)**
+4. 🎯 Siga a **[Ordem Recomendada](#-fase-1-fundamentos-semana-1-2)**
+
+---
+
+## 🗺️ Mapa de Aprendizado
+
+```
+┌────────────────────────────────────────────────────────────────┐
+│                    JORNADA QUARKUS                             │
+│                    (12+ semanas)                               │
+└────────────────────────────────────────────────────────────────┘
+
+    🎯 FASE 1: FUNDAMENTOS (Semana 1-2)
+    ┌──────────────────────────────────┐
+    │  ├─ Quarkus.md                   │
+    │  ├─ getting-started.md           │
+    │  ├─ annotations.md               │
+    │  ├─ cdi-e-injecao.md             │
+    │  ├─ configuracoes.md             │
+    │  └─ logging.md                   │
+    └──────────────────────────────────┘
+              │
+              ▼
+    💾 FASE 2: PERSISTÊNCIA (Semana 3-4)
+    ┌──────────────────────────────────┐
+    │  ├─ panache.md                   │
+    │  ├─ validator.md                 │
+    │  ├─ cache.md                     │
+    │  └─ redis.md                     │
+    └──────────────────────────────────┘
+              │
+              ▼
+    🔒 FASE 3: SEGURANÇA (Semana 5-6)
+    ┌──────────────────────────────────┐
+    │  ├─ auth.md                      │
+    │  ├─ microprofile.md              │
+    │  └─ keycloak.md ⭐               │
+    └──────────────────────────────────┘
+              │
+              ▼
+    ⚡ FASE 4: REATIVO (Semana 7-8)
+    ┌──────────────────────────────────┐
+    │  ├─ programação-reativa.md       │
+    │  ├─ Mutiny.md ⭐                 │
+    │  ├─ rest-client.md               │
+    │  └─ padrao-RESTful.md            │
+    └──────────────────────────────────┘
+              │
+              ▼
+    📨 FASE 5: MESSAGING (Semana 9)
+    ┌──────────────────────────────────┐
+    │  ├─ kafka.md ⭐                  │
+    │  └─ scheduling.md                │
+    └──────────────────────────────────┘
+              │
+              ▼
+    🛠️ FASE 6: DEVOPS (Semana 10-11)
+    ┌──────────────────────────────────┐
+    │  ├─ kubernates-docker.md ⭐      │
+    │  ├─ testes.md                    │
+    │  └─ kibana-e-observabilidade.md  │
+    └──────────────────────────────────┘
+              │
+              ▼
+    🎓 FASE 7: AVANÇADO (Semana 12+)
+    ┌──────────────────────────────────┐
+    │  ├─ annotations-personalizadas   │
+    │  ├─ extensoes.md                 │
+    │  ├─ kotlin.md                    │
+    │  ├─ advanced.md                  │
+    │  └─ langchain4j.md               │
+    └──────────────────────────────────┘
+              │
+              ▼
+    🏆 PROJETO FINAL: Microserviço Completo
+    ┌──────────────────────────────────────────────────────┐
+    │  ✅ REST API + GraphQL                               │
+    │  ✅ PostgreSQL + Redis + Kafka                       │
+    │  ✅ Keycloak Auth + JWT                              │
+    │  ✅ Reactive Endpoints                               │
+    │  ✅ Docker + Kubernetes                              │
+    │  ✅ Metrics + Health Checks + Tracing                │
+    │  ✅ Testes (Unit + Integration)                      │
+    └──────────────────────────────────────────────────────┘
+
+⭐ = Documentos mais complexos (reserve mais tempo)
+```
 
 ---
 
@@ -650,40 +762,343 @@ Conceitos e padrões de programação reativa com Mutiny.
 
 ---
 
-## 📚 Guia de Estudo
-
-### Iniciantes (2-3 semanas)
-1. **Dia 1-3**: [Quarkus.md](../frameworks/Quarkus.md) - Introdução
-2. **Dia 4-7**: [annotations.md](./annotations.md) + [cdi-e-injecao.md](./cdi-e-injecao.md)
-3. **Dia 8-10**: [panache.md](./panache.md) - ORM
-4. **Dia 11-14**: [configuracoes.md](./configuracoes.md) + [logging.md](./logging.md)
-5. **Dia 15-21**: Projeto prático simples
-
-### Intermediários (3-4 semanas)
-1. **Semana 1**: [auth.md](./auth.md) + [validator.md](./validator.md)
-2. **Semana 2**: [rest-client.md](./rest-client.md) + [cache.md](./cache.md)
-3. **Semana 3**: [Mutiny.md](./Mutiny.md) - Programação reativa
-4. **Semana 4**: [kafka.md](./kafka.md) - Event streaming
-
-### Avançados (2-3 semanas)
-1. **Semana 1**: [kubernates-docker.md](./kubernates-docker.md) + [kibana-e-observabilidade.md](./kibana-e-observabilidade.md)
-2. **Semana 2**: [extensoes.md](./extensoes.md) + [annotations-personalizadas.md](./annotations-personalizadas.md)
-3. **Semana 3**: [langchain4j.md](./langchain4j.md) - IA
-
----
-
 ## 🔗 Recursos Adicionais
 
 ### Documentação Oficial
 - [Quarkus Guides](https://quarkus.io/guides/)
 - [Quarkus Blog](https://quarkus.io/blog/)
 - [Quarkus Extensions](https://quarkus.io/extensions/)
+- [Quarkus GitHub](https://github.com/quarkusio/quarkus)
 
 ### Ferramentas
 - [Quarkus CLI](https://quarkus.io/guides/cli-tooling)
 - [Quarkus Dev UI](http://localhost:8080/q/dev) - Dev mode only
 - [Code.quarkus.io](https://code.quarkus.io) - Project generator
+- [Quarkus QuickStarts](https://github.com/quarkusio/quarkus-quickstarts)
+
+### Comunidade
+- [Quarkus Discussions](https://github.com/quarkusio/quarkus/discussions)
+- [Stack Overflow](https://stackoverflow.com/questions/tagged/quarkus)
+- [Quarkus Zulip Chat](https://quarkusio.zulipchat.com/)
+- [Twitter/X](https://twitter.com/quarkusio)
+
+### Vídeos e Tutoriais
+- [Quarkus Insights (YouTube)](https://www.youtube.com/playlist?list=PLsM3ZE5tGAVbMz1LJqc8L5LpnfxPPKloO)
+- [Red Hat Developers](https://developers.redhat.com/topics/quarkus)
 
 ---
 
-**Voltar para**: [📁 Repositório Principal](../README.md)
+**📍 Você está aqui**: frameworks/quarkus/README.md  
+**⬆️ Voltar para**: [📁 Repositório Principal](../README.md)
+
+## 📚 Guia de Estudo - Ordem Recomendada
+
+### 🎯 **FASE 1: Fundamentos** (Semana 1-2)
+
+> **Objetivo**: Entender os conceitos básicos do Quarkus e criar aplicações simples
+
+#### **Semana 1: Primeiros Passos**
+1. **[Quarkus.md](../frameworks/Quarkus.md)** - Visão geral e filosofia
+2. **[getting-started.md](./guides/getting-started.md)** - Setup e primeiro projeto
+3. **[annotations.md](./core/annotations.md)** - Annotations fundamentais (REST, CDI)
+
+**Projeto Prático**: API REST simples com endpoints GET/POST
+
+#### **Semana 2: Core Features**
+4. **[cdi-e-injecao.md](./core/cdi-e-injecao.md)** - Injeção de dependências e escopos
+5. **[configuracoes.md](./core/configuracoes.md)** - application.properties e profiles
+6. **[logging.md](./core/logging.md)** - Logs estruturados
+
+**Projeto Prático**: Refatorar API com services, repositories e configurações
+
+---
+
+### 🚀 **FASE 2: Persistência e Validação** (Semana 3-4)
+
+> **Objetivo**: Trabalhar com banco de dados e validações
+
+#### **Semana 3: Database**
+7. **[panache.md](./data/panache.md)** - ORM simplificado (Active Record + Repository)
+8. **[validator.md](./security/validator.md)** - Bean Validation (JSR 380)
+
+**Projeto Prático**: CRUD completo com validações e persistência PostgreSQL
+
+#### **Semana 4: Cache e Performance**
+9. **[cache.md](./data/cache.md)** - Cache local
+10. **[redis.md](./data/redis.md)** - Cache distribuído
+
+**Projeto Prático**: Adicionar cache ao CRUD anterior
+
+---
+
+### 🔒 **FASE 3: Segurança** (Semana 5-6)
+
+> **Objetivo**: Proteger aplicações com autenticação e autorização
+
+#### **Semana 5: Auth Básico**
+11. **[auth.md](./security/auth.md)** - JWT, OIDC, Security annotations
+12. **[microprofile.md](./core/microprofile.md)** - MicroProfile Config, JWT, Health
+
+**Projeto Prático**: API protegida com JWT e roles
+
+#### **Semana 6: Keycloak**
+13. **[keycloak.md](./security/keycloak.md)** - Keycloak + Docker + Quarkus
+
+**Projeto Prático**: Integração completa com Keycloak (login, logout, refresh token)
+
+---
+
+### ⚡ **FASE 4: Programação Reativa** (Semana 7-8)
+
+> **Objetivo**: Aplicações assíncronas e não-bloqueantes
+
+#### **Semana 7: Mutiny**
+14. **[programação-reativa.md](./reactive/programação-reativa.md)** - Conceitos de reatividade
+15. **[Mutiny.md](./reactive/Mutiny.md)** - Uni, Multi, operadores
+
+**Projeto Prático**: Converter endpoints para reativo (Uni/Multi)
+
+#### **Semana 8: REST Client Reativo**
+16. **[rest-client.md](./integrations/rest-client.md)** - Consumir APIs externas
+17. **[padrao-RESTful.md](./integrations/padrao-RESTful.md)** - Best practices REST
+
+**Projeto Prático**: Gateway agregando múltiplas APIs externas
+
+---
+
+### 📨 **FASE 5: Messaging e Eventos** (Semana 9)
+
+> **Objetivo**: Comunicação assíncrona entre serviços
+
+18. **[kafka.md](./messaging/kafka.md)** - Kafka Producer/Consumer
+19. **[scheduling.md](./integrations/scheduling.md)** - Jobs agendados
+
+**Projeto Prático**: Sistema de eventos com Kafka (pedidos, notificações)
+
+---
+
+### 🛠️ **FASE 6: DevOps e Observabilidade** (Semana 10-11)
+
+> **Objetivo**: Deploy, monitoramento e troubleshooting
+
+#### **Semana 10: Containerização**
+20. **[kubernates-docker.md](./devops/kubernates-docker.md)** - Docker, Docker Compose, K8s
+21. **[testes.md](./testing/testes.md)** - Testes unitários, integração, mocks
+
+**Projeto Prático**: Dockerizar aplicação completa (app + DB + Kafka + Keycloak)
+
+#### **Semana 11: Observabilidade**
+22. **[kibana-e-observabilidade.md](./devops/kibana-e-observabilidade.md)** - Metrics, Health Checks, Tracing
+
+**Projeto Prático**: Dashboard Grafana com métricas da aplicação
+
+---
+
+### 🎓 **FASE 7: Tópicos Avançados** (Semana 12+)
+
+> **Objetivo**: Features especializadas e otimizações
+
+#### **Extensibilidade**
+23. **[annotations-personalizadas.md](./core/annotations-personalizadas.md)** - Criar annotations customizadas
+24. **[annotations-personalizadas-refined.md](./core/annotations-personalizadas-refined.md)** - Versão refinada
+25. **[extensoes.md](./integrations/extensoes.md)** - Criar extensões Quarkus
+
+#### **Linguagens Alternativas**
+26. **[kotlin.md](./guides/kotlin.md)** - Quarkus com Kotlin
+27. **[advanced.md](./guides/advanced.md)** - Tópicos avançados
+
+#### **AI e Integrações**
+28. **[langchain4j.md](./integrations/langchain4j.md)** - LLMs e IA com Quarkus
+
+**Projeto Final**: Microserviço completo usando todas as técnicas aprendidas
+
+---
+
+## 🗺️ Trilhas Alternativas de Estudo
+
+### 🏃 **Trilha Rápida** (4 semanas - Desenvolvedor Experiente)
+
+**Semana 1**: Fundamentos (1-6)  
+**Semana 2**: Persistência + Segurança (7-13)  
+**Semana 3**: Reativo + Messaging (14-19)  
+**Semana 4**: DevOps (20-22)
+
+### 🎯 **Trilha Backend API** (6 semanas)
+
+Foco: APIs REST seguras e escaláveis
+
+1. Fundamentos (1-6)
+2. Persistência (7-10)
+3. Segurança (11-13)
+4. REST Client + Patterns (16-17)
+5. Testes (21)
+6. Docker + Observabilidade (20, 22)
+
+### 📊 **Trilha Event-Driven** (6 semanas)
+
+Foco: Arquitetura orientada a eventos
+
+1. Fundamentos (1-6)
+2. Persistência (7-8)
+3. Reativo (14-15)
+4. Kafka (18-19)
+5. Docker (20)
+6. Observabilidade (22)
+
+### 🤖 **Trilha AI/ML** (5 semanas)
+
+Foco: Aplicações com IA
+
+1. Fundamentos (1-6)
+2. Persistência (7-8)
+3. Segurança (11-12)
+4. LangChain4j (28)
+5. Deploy (20)
+
+---
+
+## 📊 Matriz de Pré-requisitos
+
+```
+┌─────────────────────────────────────────────────────────┐
+│ LEGENDA: ✅ Obrigatório  🔶 Recomendado  ⬜ Opcional    │
+└─────────────────────────────────────────────────────────┘
+
+Documento                        │ Pré-requisitos
+─────────────────────────────────┼───────────────────────────────
+getting-started.md               │ (nenhum)
+annotations.md                   │ getting-started ✅
+cdi-e-injecao.md                 │ annotations ✅
+configuracoes.md                 │ cdi-e-injecao ✅
+panache.md                       │ cdi-e-injecao ✅
+validator.md                     │ panache 🔶
+auth.md                          │ validator 🔶
+keycloak.md                      │ auth ✅
+Mutiny.md                        │ annotations ✅
+rest-client.md                   │ Mutiny 🔶
+kafka.md                         │ Mutiny ✅
+kubernates-docker.md             │ getting-started ✅
+kibana-e-observabilidade.md      │ kubernates-docker ✅
+testes.md                        │ panache ✅, auth 🔶
+annotations-personalizadas.md    │ cdi-e-injecao ✅
+extensoes.md                     │ annotations-personalizadas 🔶
+kotlin.md                        │ getting-started ✅
+langchain4j.md                   │ rest-client ✅
+```
+
+---
+
+## ⏱️ Estimativa de Tempo por Documento
+
+| Documento | Dificuldade | Tempo Estimado | Prática |
+|-----------|-------------|----------------|---------|
+| getting-started.md | ⭐ | 2-3h | 1h |
+| annotations.md | ⭐ | 3-4h | 2h |
+| cdi-e-injecao.md | ⭐⭐ | 4-5h | 3h |
+| configuracoes.md | ⭐ | 2-3h | 1h |
+| logging.md | ⭐ | 1-2h | 30min |
+| panache.md | ⭐⭐ | 5-6h | 4h |
+| validator.md | ⭐⭐ | 3-4h | 2h |
+| cache.md | ⭐ | 2-3h | 1h |
+| redis.md | ⭐⭐ | 3-4h | 2h |
+| auth.md | ⭐⭐⭐ | 6-8h | 4h |
+| microprofile.md | ⭐⭐⭐ | 6-8h | 4h |
+| keycloak.md | ⭐⭐⭐⭐ | 8-10h | 6h |
+| programação-reativa.md | ⭐⭐⭐ | 4-5h | 2h |
+| Mutiny.md | ⭐⭐⭐⭐ | 8-10h | 6h |
+| rest-client.md | ⭐⭐ | 3-4h | 2h |
+| padrao-RESTful.md | ⭐⭐ | 3-4h | 2h |
+| kafka.md | ⭐⭐⭐⭐ | 8-10h | 6h |
+| scheduling.md | ⭐ | 2-3h | 1h |
+| kubernates-docker.md | ⭐⭐⭐⭐ | 10-12h | 8h |
+| kibana-e-observabilidade.md | ⭐⭐⭐ | 6-8h | 4h |
+| testes.md | ⭐⭐⭐ | 6-8h | 4h |
+| annotations-personalizadas.md | ⭐⭐⭐⭐ | 8-10h | 6h |
+| extensoes.md | ⭐⭐⭐⭐⭐ | 12-15h | 10h |
+| kotlin.md | ⭐⭐⭐ | 6-8h | 4h |
+| advanced.md | ⭐⭐⭐⭐ | 8-10h | 6h |
+| langchain4j.md | ⭐⭐⭐ | 6-8h | 4h |
+
+**Total Estimado**: ~150-180 horas (teoria + prática)
+
+---
+
+## 🎯 Checklist de Progresso
+
+Marque conforme for completando:
+
+### **Fase 1: Fundamentos**
+- [ ] Quarkus.md
+- [ ] getting-started.md
+- [ ] annotations.md
+- [ ] cdi-e-injecao.md
+- [ ] configuracoes.md
+- [ ] logging.md
+
+### **Fase 2: Persistência**
+- [ ] panache.md
+- [ ] validator.md
+- [ ] cache.md
+- [ ] redis.md
+
+### **Fase 3: Segurança**
+- [ ] auth.md
+- [ ] microprofile.md
+- [ ] keycloak.md
+
+### **Fase 4: Reativo**
+- [ ] programação-reativa.md
+- [ ] Mutiny.md
+- [ ] rest-client.md
+- [ ] padrao-RESTful.md
+
+### **Fase 5: Messaging**
+- [ ] kafka.md
+- [ ] scheduling.md
+
+### **Fase 6: DevOps**
+- [ ] kubernates-docker.md
+- [ ] kibana-e-observabilidade.md
+- [ ] testes.md
+
+### **Fase 7: Avançado**
+- [ ] annotations-personalizadas.md
+- [ ] annotations-personalizadas-refined.md
+- [ ] extensoes.md
+- [ ] kotlin.md
+- [ ] advanced.md
+- [ ] langchain4j.md
+
+---
+
+## 💡 Dicas de Estudo
+
+### ✅ **Boas Práticas**
+1. **Não pule etapas** - Siga a ordem recomendada
+2. **Pratique sempre** - Código > Teoria
+3. **Crie projetos** - Um projeto por fase
+4. **Revise constantemente** - Volte aos fundamentos
+5. **Use o Dev UI** - `http://localhost:8080/q/dev`
+
+### ⚡ **Recursos Complementares**
+- **Quarkus Guides**: https://quarkus.io/guides/
+- **Quarkus Blog**: https://quarkus.io/blog/
+- **YouTube**: Quarkus Insights
+- **Discord**: Quarkus Community
+
+### 🚫 **Erros Comuns**
+- ❌ Pular fundamentos (CDI, annotations)
+- ❌ Não praticar com código real
+- ❌ Ignorar testes
+- ❌ Não usar Docker desde cedo
+- ❌ Esquecer de configurar profiles (dev/prod)
+
+---
+
+## � Documentação por Categoria
+
+> **Nota**: Esta seção organiza todas as documentações por categoria. Para ordem de estudo, veja [Guia de Estudo](#-guia-de-estudo---ordem-recomendada).
+
+---
+
+## � Documentação Principal
